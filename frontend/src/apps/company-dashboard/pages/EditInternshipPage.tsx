@@ -31,7 +31,8 @@ export const EditInternshipPage: React.FC = () => {
     deadline: '',
     companyRating: 4.0,
     industry: '',
-    status: 'Active' as 'Active' | 'Closed' | 'Draft'
+    status: 'Active' as 'Active' | 'Closed' | 'Draft',
+    about_company: ''
   });
 
   useEffect(() => {
@@ -54,7 +55,8 @@ export const EditInternshipPage: React.FC = () => {
         deadline: foundInternship.deadline ? foundInternship.deadline.toISOString().split('T')[0] : '',
         companyRating: foundInternship.rating || 4.0,
         industry: foundInternship.industry || '',
-        status: foundInternship.status
+          status: foundInternship.status,
+          about_company: (foundInternship as any).about_company || ''
       });
     }
   }, [id]);
@@ -84,6 +86,7 @@ export const EditInternshipPage: React.FC = () => {
     if (!formData.level.trim()) newErrors.level = 'Experience level is required';
     if (!formData.category.trim()) newErrors.category = 'Category is required';
     if (!formData.deadline) newErrors.deadline = 'Application deadline is required';
+  if (formData.about_company && formData.about_company.length > 1000) newErrors.about_company = 'About the company must be 1000 characters or less';
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -96,7 +99,7 @@ export const EditInternshipPage: React.FC = () => {
     
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+  await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Show success notification
       const notification = document.createElement('div');
@@ -391,6 +394,23 @@ export const EditInternshipPage: React.FC = () => {
                   placeholder="Describe the internship opportunity..."
                 />
                 {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
+              </div>
+
+              {/* About the Company */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">About the Company</label>
+                <textarea
+                  name="about_company"
+                  value={(formData as any).about_company}
+                  onChange={handleInputChange}
+                  rows={4}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 ${
+                    errors.about_company ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="Write a short description about your company..."
+                />
+                <div className="text-sm text-muted-foreground mt-1">{((formData as any).about_company || '').length}/1000 characters</div>
+                {errors.about_company && <p className="mt-1 text-sm text-red-600">{errors.about_company}</p>}
               </div>
 
               {/* Requirements */}

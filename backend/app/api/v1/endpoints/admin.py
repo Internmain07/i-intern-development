@@ -321,6 +321,7 @@ async def get_all_internships(
         internship_data.append({
             "id": internship.id,
             "title": internship.title,
+            "about_company": internship.about_company,
             "company": company.company_name if company else "Unknown",
             "location": internship.location or "Remote",
             "stipend": internship.stipend or 0,

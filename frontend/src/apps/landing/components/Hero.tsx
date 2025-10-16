@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Users } from 'lucide-react';
 import styled, { keyframes } from 'styled-components';
+import { LogoCarousel } from './LogoCarousel';
 
 // Keyframes for the radial gradient background animation
 const gradientShift = keyframes`
@@ -94,10 +95,10 @@ export const Hero: React.FC = () => {
           </div>
         </div>
       </div>
-      {/* Temporarily hidden - Trusted by Top Companies section */}
-      {/* <div className="w-full relative z-10 pb-12">
+      {/* Trusted by Top Companies section */}
+      <div className="w-full relative z-10 pb-12">
         <LogoCarousel />
-      </div> */}
+      </div>
     </section>
   );
 };

@@ -20,7 +20,6 @@ export const Footer: React.FC = () => {
 
   const forStudentsLinks = [
     { name: 'Our Services', href: '#services' },
-    { name: 'Free Job Alerts', href: '#job-alerts' },
     { name: 'Resume Maker', href: '#resume-maker' },
     { name: 'Jobs for Women', href: '#women-jobs' },
   ];

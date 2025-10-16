@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GraduationCap, Menu, X, User, Building2 } from 'lucide-react';
+import { Menu, X, User, Building2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 export const Navbar: React.FC = () => {
@@ -65,8 +65,9 @@ export const Navbar: React.FC = () => {
               transition={{ duration: 0.2 }}
               className="flex items-center gap-3"
             >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-300 ${logoBgColor}`}>
-                <GraduationCap size={24} className="text-white" />
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-300 ${logoBgColor} p-1 overflow-hidden`}>
+                {/* Use repository public logo file. Vite serves files in `public/` at root URL. Filename has a space so it's URL-encoded. */}
+                <img src="/iintern%20logo.png" alt="I-Intern logo" className="h-7 w-auto object-contain" />
               </div>
               <span className={`text-2xl font-bold transition-colors duration-300 ${logoTextColor}`}>
                 I-Intern

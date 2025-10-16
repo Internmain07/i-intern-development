@@ -98,6 +98,7 @@ export default function App() {
 
   const [modalStatus, setModalStatus] = useState<'generating' | 'success' | 'error' | null>(null);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+  const [pdfFilename, setPdfFilename] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const progressInterval = useRef<NodeJS.Timeout | null>(null);
 
@@ -144,7 +145,34 @@ export default function App() {
       }
 
       const blob = await response.blob();
-      setPdfBlob(blob);
+
+      // Determine content type from headers (fallback to application/pdf)
+      const contentType = response.headers.get('content-type') || 'application/pdf';
+
+      // Try to parse filename from Content-Disposition header
+      const contentDisposition = response.headers.get('content-disposition') || '';
+      let filename = `${resumeData.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.pdf`;
+      const fnameMatch = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(contentDisposition);
+      if (fnameMatch && fnameMatch[1]) {
+        try {
+          // decode RFC5987 encoded filename if present
+          filename = decodeURIComponent(fnameMatch[1]);
+        } catch (_e) {
+          filename = fnameMatch[1];
+        }
+      }
+
+      // If the received blob doesn't have a type set, re-create it using the known content type
+      let pdf: Blob;
+      if (!blob.type || blob.type === 'application/octet-stream') {
+        const arrayBuffer = await response.arrayBuffer();
+        pdf = new Blob([arrayBuffer], { type: contentType });
+      } else {
+        pdf = blob;
+      }
+
+      setPdfBlob(pdf);
+      setPdfFilename(filename);
       setProgress(100);
       setModalStatus('success');
     } catch (error) {
@@ -165,7 +193,7 @@ export default function App() {
       const url = URL.createObjectURL(pdfBlob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${resumeData.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.pdf`;
+      a.download = pdfFilename || `${resumeData.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

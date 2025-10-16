@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import date
+from pydantic import validator
 
 class InternshipBase(BaseModel):
     title: str
@@ -18,9 +19,16 @@ class InternshipBase(BaseModel):
     deadline: Optional[date] = None
     date_posted: Optional[date] = None
     status: Optional[str] = None
+    about_company: Optional[str] = None
 
 class InternshipCreate(InternshipBase):
     pass
+
+    @validator('about_company')
+    def about_company_max_length(cls, v):
+        if v and len(v) > 1000:
+            raise ValueError('about_company must be 1000 characters or fewer')
+        return v
 
 class InternshipUpdate(InternshipBase):
     pass

@@ -16,6 +16,7 @@ export interface Internship {
   logo?: string;
   rating?: number;
   category?: string;
+  aboutCompany?: string;
   level?: 'Beginner' | 'Intermediate' | 'Advanced';
   benefits?: string[];
   skills?: string[];

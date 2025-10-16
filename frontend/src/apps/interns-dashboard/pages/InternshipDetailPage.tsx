@@ -150,6 +150,16 @@ const InternshipDetailPage = () => {
                 </p>
               </div>
 
+              {/* About the Company */}
+              {internship.about_company && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">About the Company</h3>
+                  <p className="text-muted-foreground whitespace-pre-line">
+                    {internship.about_company}
+                  </p>
+                </div>
+              )}
+
               {/* Stipend & Duration */}
               {(internship.stipend || internship.duration) && (
                 <div className="grid grid-cols-2 gap-4">
