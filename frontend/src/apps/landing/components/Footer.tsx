@@ -181,7 +181,7 @@ export const Footer: React.FC = () => {
           transition={{ duration: 0.6, delay: 0.6 }}
           viewport={{ once: true }}
         >
-          <p>&copy; 2024 I-Intern. All rights reserved. Built with ❤️ for the future workforce.</p>
+          <p>&copy; I-Intern Technologies Private Limited.</p>
         </motion.div>
       </div>
     </footer>
