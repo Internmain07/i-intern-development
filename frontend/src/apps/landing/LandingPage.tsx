@@ -6,6 +6,7 @@ import PricingPage from './pages/PricingPage';
 import ContactPage from './pages/ContactPage';
 import HireInternsPage from './pages/HireInternsPage';
 import TermsAndConditions from './pages/TermsAndConditions';
+import PrivacyPage from './pages/PrivacyPage';
 import { LoginPage } from './components/LoginPage';
 import { StudentRegistrationPage } from './components/StudentRegistrationPage';
 import { CompanyRegistrationPage } from './components/CompanyRegistrationPage';
@@ -24,6 +25,7 @@ const LandingPage: React.FC = () => {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/hire-interns" element={<HireInternsPage />} />
       <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register/student" element={<StudentRegistrationPage />} />
       <Route path="/register/company" element={<CompanyRegistrationPage />} />

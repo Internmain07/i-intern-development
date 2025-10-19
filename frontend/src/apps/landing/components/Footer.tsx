@@ -19,12 +19,12 @@ export const Footer: React.FC = () => {
 
   const forStudentsLinks = [
     { name: 'Our Services', href: '#services' },
-    { name: 'Resume Maker', href: '#resume-maker' },
+    { name: 'Resume Maker', href: '/resume' },
   ];
 
   const legalLinks = [
     { name: 'Terms & Conditions', href: '/terms-and-conditions' },
-    { name: 'Privacy', href: '#privacy' },
+    { name: 'Privacy', href: '/privacy' },
     { name: 'FAQ', href: '/faq' },
     { name: 'Contact us', href: '/contact' },
     { name: 'Sitemap', href: '#sitemap' },
