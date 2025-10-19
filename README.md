@@ -196,14 +196,21 @@ Manual test examples are shown in the backend section (curl). You can also use t
 
 ## Files added/edited
 
-- `README.md` (this file) — Repository-level instructions and developer guide, updated with FAQ app documentation
+- `README.md` (this file) — Repository-level instructions and developer guide, updated with FAQ app and ChatWidget documentation
+- `frontend/src/shared/components/ChatWidget.tsx` — **NEW** Global AI chatbot widget with 15+ conversation topics, available site-wide on all pages
+  - Interactive chat interface with floating button (bottom-right)
+  - 15 predefined topics: resume building, job search, AI assessments, application tracking, interview prep, networking, cover letters, salary negotiation, technical skills, remote work, account settings
+  - "Talk to Human" escalation with direct email support
+  - Feedback system (thumbs up/down)
+  - Session management with reset capability
+  - Fully responsive design matching I-Intern branding
+- `frontend/src/App.tsx` — Added global ChatWidget component and FAQ routing (`/faq/*`)
 - `frontend/src/apps/faq/` — **NEW** Standalone FAQ app with search, accordion functionality, and 40+ comprehensive Q&As covering platform features, account management, internships, companies, AI tools (IVA, AURA, Resume Builder), support, and legal topics
   - `FAQApp.tsx` — Main FAQ app component with routing
   - `FAQ.tsx` — FAQ page with search, category filtering, and accordion UI
   - `components/SearchBar.tsx` — Real-time search component
   - `components/FAQAccordion.tsx` — Collapsible FAQ item component
   - `data/faqData.ts` — 40+ Q&As organized across 10 categories
-- `frontend/src/App.tsx` — Added FAQ routing (`/faq/*`) to enable standalone FAQ app access
 - `frontend/src/apps/landing/components/Footer.tsx` — Added FAQ link to footer legal section, updated copyright to include company name "I-Intern", removed "We are Hiring" section, removed "Jobs for Women" item, fixed Resume Maker link (`/resume`) and Privacy link (`/privacy`)
 - `frontend/src/apps/landing/pages/PrivacyPage.tsx` — Comprehensive Privacy Policy page (GDPR/DPDP Act compliant) with 12 sections
 - `LINK_AUDIT_REPORT.md` — Complete link verification audit with 150+ links analyzed across all apps
@@ -211,7 +218,9 @@ Manual test examples are shown in the backend section (curl). You can also use t
 - `LINK_VERIFICATION_SUMMARY.md` — Phase 1 implementation summary with metrics and next steps
 - `LINK_AUDIT_QUICK_REFERENCE.md` — Quick reference guide for developers with critical findings and action items
 
-**Testing Completed**: FAQ app verified with route testing, footer link navigation, search functionality (case-insensitive), category filtering, accordion expand/collapse, and CTA button functionality.
+**Testing Completed**: 
+- ChatWidget: Successfully enabled globally across all pages with build verification (10.46s build time)
+- FAQ app: Route testing, footer link navigation, search functionality (case-insensitive), category filtering, accordion expand/collapse, and CTA button functionality verified
 
 ---
 

@@ -8,6 +8,7 @@ import LoadingSpinner from '@/shared/components/LoadingSpinner';
 import ErrorBoundary from '@/shared/components/ErrorBoundary';
 import { AuthProvider } from '@/auth/AuthContext'; // Import AuthProvider
 import { ProtectedRoute } from '@/shared/components/ProtectedRoute';
+import ChatWidget from '@/shared/components/ChatWidget';
 
 // Lazy load all main app components
 const LandingPage = lazy(() => import('@/apps/landing/LandingPage'));
@@ -88,6 +89,9 @@ const App: React.FC = () => {
               </div>
             </BrowserRouter>
           </AuthProvider> {/* And close it here */}
+          
+          {/* Global chat widget - available on all pages */}
+          <ChatWidget />
           
           {/* Global toast notifications */}
           <Toaster />
