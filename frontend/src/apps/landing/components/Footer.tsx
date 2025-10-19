@@ -27,6 +27,7 @@ export const Footer: React.FC = () => {
   const legalLinks = [
     { name: 'Terms & Conditions', href: '/terms-and-conditions' },
     { name: 'Privacy', href: '#privacy' },
+    { name: 'FAQ', href: '/faq' },
     { name: 'Contact us', href: '/contact' },
     { name: 'Sitemap', href: '#sitemap' },
   ];

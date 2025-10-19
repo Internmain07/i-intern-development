@@ -7,6 +7,15 @@ This repository contains the I-Intern platform: a FastAPI backend and a Vite + R
 ```
 backend/        # FastAPI backend
 frontend/       # Vite + React frontend
+├── src/apps/   # Multi-app architecture
+│   ├── landing/           # Landing pages (/, /about, /pricing, /contact)
+│   ├── interns-dashboard/ # Intern dashboard (/interns/*)
+│   ├── company-dashboard/ # Company dashboard (/company/*)
+│   ├── admin-dashboard/   # Admin dashboard (/admin/*)
+│   ├── build-resume/      # Resume builder (/resume/*)
+│   ├── iva/              # Virtual Interview Assistant (/iva/*)
+│   ├── aura/             # AI Career Assistant (/aura/*)
+│   └── faq/              # FAQ page (/faq/*)
 ``` 
 
 ## Prerequisites
@@ -102,7 +111,16 @@ curl -X POST http://localhost:8000/api/v1/auth/login \
 
 Path: `frontend/`
 
-The frontend is a Vite + React app written in TypeScript with a number of sub-apps in `src/apps/`.
+The frontend is a Vite + React app written in TypeScript with a multi-app architecture. Each app is isolated and accessible via its own route:
+
+- **Landing** (`/`) — Marketing pages, authentication, registration
+- **Interns Dashboard** (`/interns/*`) — Intern profile, applications, resume builder
+- **Company Dashboard** (`/company/*`) — Company profile, job postings, applications
+- **Admin Dashboard** (`/admin/*`) — Administrative functions
+- **Build Resume** (`/resume/*`) — AI-powered resume builder
+- **IVA** (`/iva/*`) — Virtual Interview Assistant
+- **AURA** (`/aura/*`) — AI Career Guidance Assistant
+- **FAQ** (`/faq/*`) — Frequently Asked Questions (standalone app, accessible via footer links only)
 
 Quick setup (PowerShell)
 
@@ -179,6 +197,9 @@ Manual test examples are shown in the backend section (curl). You can also use t
 ## Files added/edited
 
 - `README.md` (this file) — repository-level instructions and developer guide
+- `frontend/src/apps/faq/` — New standalone FAQ app with search and accordion functionality
+- `frontend/src/App.tsx` — Added FAQ routing (`/faq/*`)
+- `frontend/src/apps/landing/components/Footer.tsx` — Added FAQ link to footer navigation
 
 ---
 
@@ -187,4 +208,4 @@ If you'd like, I can also:
 - add a `.env.example` at the repo root that combines the important environment values,
 - create simple run scripts in `package.json` to orchestrate both services.
 
-Completion summary: created top-level README with setup, run, and troubleshooting instructions for both backend and frontend.  
+Completion summary: created top-level README with setup, run, and troubleshooting instructions for both backend and frontend. Updated to reflect multi-app architecture including new standalone FAQ app.  

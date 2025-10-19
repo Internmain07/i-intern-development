@@ -17,6 +17,7 @@ const AdminDashboard = lazy(() => import('@/apps/admin-dashboard/AdminDashboard'
 const BuildResume = lazy(() => import('@/apps/build-resume/BuildResume'));
 const IVA = lazy(() => import('@/apps/iva/IVA'));
 const AURA = lazy(() => import('@/apps/aura/AURA'));
+const FAQ = lazy(() => import('@/apps/faq/FAQ'));
 
 // Create a single QueryClient instance
 const queryClient = new QueryClient({
@@ -79,6 +80,9 @@ const App: React.FC = () => {
                     
                     {/* AURA AI Interface */}
                     <Route path="/aura/*" element={<AURA />} />
+                    
+                    {/* FAQ Page */}
+                    <Route path="/faq/*" element={<FAQ />} />
                   </Routes>
                 </Suspense>
               </div>
