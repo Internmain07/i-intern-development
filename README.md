@@ -199,7 +199,7 @@ Manual test examples are shown in the backend section (curl). You can also use t
 - `README.md` (this file) — repository-level instructions and developer guide
 - `frontend/src/apps/faq/` — New standalone FAQ app with search and accordion functionality
 - `frontend/src/App.tsx` — Added FAQ routing (`/faq/*`)
-- `frontend/src/apps/landing/components/Footer.tsx` — Added FAQ link to footer navigation and updated copyright to include company name
+- `frontend/src/apps/landing/components/Footer.tsx` — Added FAQ link to footer navigation, updated copyright to include company name, and removed "We are Hiring" section
 
 ---
 
@@ -208,4 +208,4 @@ If you'd like, I can also:
 - add a `.env.example` at the repo root that combines the important environment values,
 - create simple run scripts in `package.json` to orchestrate both services.
 
-Completion summary: created top-level README with setup, run, and troubleshooting instructions for both backend and frontend. Updated to reflect multi-app architecture including new standalone FAQ app and footer company name update.  
+Completion summary: created top-level README with setup, run, and troubleshooting instructions for both backend and frontend. Updated to reflect multi-app architecture including new standalone FAQ app and footer updates (company name and removal of "We are Hiring" section).  
