@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, User, Building2 } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, User, Building2, FileText } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/auth/AuthContext';
 
 export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,6 +28,25 @@ export const Navbar: React.FC = () => {
   const handleLinkClick = () => {
     setIsOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Handle Build Resume button click with authentication logic
+  const handleBuildResumeClick = () => {
+    handleLinkClick();
+    if (isAuthenticated) {
+      // User is logged in - take them directly to resume builder
+      navigate('/resume');
+    } else {
+      // User is not logged in - show persuasive landing page gateway
+      // Scroll to the registration section or show signup prompt
+      navigate('/');
+      setTimeout(() => {
+        const registrationSection = document.getElementById('registration-gateway');
+        if (registrationSection) {
+          registrationSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
   };
 
   const navLinks = [
@@ -93,6 +115,21 @@ export const Navbar: React.FC = () => {
                 </motion.span>
               </Link>
             ))}
+            {/* Build Resume Button */}
+            <motion.button
+              onClick={handleBuildResumeClick}
+              className={`font-medium transition-colors duration-300 hover:text-[#1F7368] ${linkColor} relative flex items-center gap-2`}
+              whileHover={{ y: -2 }}
+              transition={{ duration: 0.2 }}
+            >
+              <FileText size={18} />
+              <span>Build Resume</span>
+              <motion.div
+                className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#1F7368]"
+                whileHover={{ width: '100%' }}
+                transition={{ duration: 0.3 }}
+              />
+            </motion.button>
           </div>
 
           {/* Desktop CTA Buttons */}
@@ -147,7 +184,7 @@ export const Navbar: React.FC = () => {
             transition={{ duration: 0.3 }}
           >
             <div className="container mx-auto px-6 py-6">
-              <div className="flex flex-col space-y-4">
+            <div className="flex flex-col space-y-4">
                 {navLinks.map((link, index) => (
                   <Link
                     key={index}
@@ -163,6 +200,16 @@ export const Navbar: React.FC = () => {
                     </motion.span>
                   </Link>
                 ))}
+                {/* Build Resume Mobile Link */}
+                <motion.button
+                  onClick={handleBuildResumeClick}
+                  className="text-left w-full text-[#181C19] font-medium py-2 hover:text-[#1F7368] transition-colors duration-200 rounded-lg px-3 hover:bg-[#B3EDEB]/30 flex items-center gap-2"
+                  whileHover={{ x: 4 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <FileText size={18} />
+                  Build Resume
+                </motion.button>
                 <div className="pt-4 border-t border-[#B3EDEB] space-y-3">
                   <Link to="/login" onClick={handleLinkClick}>
                     <motion.button 
