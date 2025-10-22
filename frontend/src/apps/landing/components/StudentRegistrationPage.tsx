@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, User, Calendar, Phone, GraduationCap, MapPin, Globe, Mail, Lock, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '@/services/auth.service';
+import { RegistrationSuccessModal } from '@/shared/components/RegistrationSuccessModal';
 
 interface FormData {
   firstName: string;
@@ -42,6 +43,7 @@ export const StudentRegistrationPage: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const validateAge = (dateOfBirth: string): boolean => {
@@ -147,12 +149,13 @@ export const StudentRegistrationPage: React.FC = () => {
         // Don't store token yet - user needs to verify email first
         console.log('✅ Registration successful:', response.message);
         
+        // Show success modal instead of immediate redirect
         setIsRegistered(true);
+        setShowSuccessModal(true);
         
-        // Redirect to email verification page after 1.5 seconds
-        setTimeout(() => {
-          navigate('/verify-email', { state: { email: formData.email } });
-        }, 1500);
+        // Store registration data for later use
+        sessionStorage.setItem('registrationEmail', formData.email);
+        sessionStorage.setItem('registrationFirstName', formData.firstName);
       } catch (error: any) {
         setServerError(error.message || 'Registration failed. Please try again.');
       } finally {
@@ -204,8 +207,22 @@ export const StudentRegistrationPage: React.FC = () => {
           </p>
 
           <div className="w-8 h-8 border-4 border-[#1F7368]/30 border-t-[#1F7368] rounded-full animate-spin mx-auto"></div>
-          <p className="text-gray-500 text-sm mt-4">Redirecting to verification page...</p>
+          <p className="text-gray-500 text-sm mt-4">Loading your welcome screen...</p>
         </motion.div>
+
+        {/* Registration Success Modal */}
+        <RegistrationSuccessModal
+          isOpen={showSuccessModal}
+          userName={formData.firstName}
+          onComplete={() => {
+            setShowSuccessModal(false);
+            navigate('/verify-email', { state: { email: formData.email } });
+          }}
+          onNavigateToProfile={() => {
+            setShowSuccessModal(false);
+            navigate('/verify-email', { state: { email: formData.email, redirectToProfile: true } });
+          }}
+        />
       </div>
     );
   }
