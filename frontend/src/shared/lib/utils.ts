@@ -18,11 +18,14 @@ export function formatDate(date: Date | string) {
 
 // Currency formatting utility
 export function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('en-IN', {
+  const formatted = new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
     maximumFractionDigits: 0
   }).format(amount);
+  
+  // Ensure we're using the rupee symbol (₹) instead of 'INR' or '$'
+  return formatted.replace(/^INR\s*/, '₹').replace(/^\$\s*/, '₹');
 }
 
 // Status color utility
