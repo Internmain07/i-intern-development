@@ -32,6 +32,11 @@ export const Internships: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { token } = useAuth();
 
+  // Get company name from localStorage (set during login/profile setup)
+  const getCompanyName = (): string => {
+    return localStorage.getItem('companyName') || localStorage.getItem('userName') || 'Your Company';
+  };
+
   // company-dashboard/pages/Internships.tsx
 
   const fetchInternships = async () => {
@@ -47,11 +52,13 @@ export const Internships: React.FC = () => {
       }
       const data = await response.json();
       
+      const companyName = getCompanyName();
+      
       // Transform backend data to match frontend Internship interface
       const transformedInternships = data.map((item: any) => ({
         id: item.id,
         title: item.title || 'Untitled',
-        company: 'Your Company', // TODO: Get from user profile
+        company: companyName,
         location: item.location || 'Remote',
         stipend: item.stipend || 0,
         applicantCount: item.applicant_count || 0, // Use the actual count from backend

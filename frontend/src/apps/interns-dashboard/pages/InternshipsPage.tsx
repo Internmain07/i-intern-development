@@ -92,7 +92,7 @@ const InternshipsPage = () => {
             postedDate: item.date_posted ? new Date(item.date_posted) : new Date(),
             deadline: item.deadline ? new Date(item.deadline) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
             applicants: item.applicant_count || 0,
-            rating: 4.0, // TODO: Add company rating from backend
+            rating: 4.5, // Default rating; enhance with company ratings API if available
             category: item.category || 'Other',
             level: (item.level || 'Beginner') as 'Beginner' | 'Intermediate' | 'Advanced',
             benefits: item.benefits ? item.benefits.split(',').map(b => b.trim()) : [],

@@ -81,7 +81,27 @@ const SettingsPage = () => {
 
     setIsLoading(true);
     try {
-      // TODO: Implement password change API
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+      const token = localStorage.getItem('authToken');
+      
+      const response = await fetch(`${API_URL}/api/v1/auth/change-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          current_password: passwordData.currentPassword,
+          new_password: passwordData.newPassword,
+          confirm_password: passwordData.confirmPassword
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to change password');
+      }
+
       toast({
         title: "Password Updated",
         description: "Your password has been successfully changed.",
@@ -94,7 +114,7 @@ const SettingsPage = () => {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to change password. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to change password. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -102,29 +122,109 @@ const SettingsPage = () => {
     }
   };
 
-  const handleNotificationSave = () => {
-    // TODO: Save notification preferences to backend
-    toast({
-      title: "Settings Saved",
-      description: "Your notification preferences have been updated.",
-    });
+  const handleNotificationSave = async () => {
+    setIsLoading(true);
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+      const token = localStorage.getItem('authToken');
+      
+      const response = await fetch(`${API_URL}/api/v1/profile/notification-preferences`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(notifications)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save notification preferences');
+      }
+
+      toast({
+        title: "Settings Saved",
+        description: "Your notification preferences have been updated.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save settings.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handlePrivacySave = () => {
-    // TODO: Save privacy settings to backend
-    toast({
-      title: "Settings Saved",
-      description: "Your privacy settings have been updated.",
-    });
+  const handlePrivacySave = async () => {
+    setIsLoading(true);
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+      const token = localStorage.getItem('authToken');
+      
+      const response = await fetch(`${API_URL}/api/v1/profile/privacy-settings`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(privacy)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save privacy settings');
+      }
+
+      toast({
+        title: "Settings Saved",
+        description: "Your privacy settings have been updated.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save settings.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDeleteAccount = () => {
-    // TODO: Implement account deletion
-    toast({
-      title: "Account Deletion",
-      description: "Account deletion feature coming soon. Please contact support.",
-      variant: "destructive",
-    });
+  const handleDeleteAccount = async () => {
+    setIsLoading(true);
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+      const token = localStorage.getItem('authToken');
+      
+      const response = await fetch(`${API_URL}/api/v1/auth/delete-account`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete account');
+      }
+
+      toast({
+        title: "Account Deleted",
+        description: "Your account has been successfully deleted.",
+      });
+      
+      // Clear localStorage and redirect to home
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userRole');
+      navigate('/');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete account.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
