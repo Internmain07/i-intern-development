@@ -42,6 +42,9 @@ const initialForm: InternshipFormData = {
   industry: ""
 };
 
+// Max characters for about company
+const ABOUT_COMPANY_MAX = 1000;
+
 
 export default function PostInternshipPage() {
   const { token, isAuthenticated } = useAuth(); // <-- Get token and auth status from context
@@ -51,6 +54,7 @@ export default function PostInternshipPage() {
   const [currentSkill, setCurrentSkill] = useState('');
   const [currentRequirement, setCurrentRequirement] = useState('');
   const [currentBenefit, setCurrentBenefit] = useState('');
+  const [aboutCompany, setAboutCompany] = useState('');
   const navigate = useNavigate();
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
@@ -120,6 +124,7 @@ export default function PostInternshipPage() {
       skills: form.skills.join(', '),
       requirements: form.requirements.join(', '),
       benefits: form.benefits.join(', '),
+  about_company: aboutCompany,
       
       // Dates
       deadline: form.deadline,
@@ -227,6 +232,20 @@ export default function PostInternshipPage() {
                 rows={4}
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
               />
+            </div>
+            
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">About the Company</label>
+              <textarea
+                id="aboutCompany"
+                name="aboutCompany"
+                rows={4}
+                placeholder="Write a short description about your company..."
+                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                value={aboutCompany}
+                onChange={(e) => setAboutCompany(e.target.value.slice(0, ABOUT_COMPANY_MAX))}
+              />
+              <div className="text-sm text-muted-foreground mt-1">{aboutCompany.length}/{ABOUT_COMPANY_MAX} characters</div>
             </div>
           </div>
 

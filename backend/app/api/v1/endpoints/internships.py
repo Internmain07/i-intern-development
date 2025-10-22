@@ -211,6 +211,7 @@ def read_internships_with_match(
             "description": internship.description,
             "company_id": internship.company_id,
             "company_name": internship.company.company_name if internship.company else None,
+            "about_company": internship.about_company,
             "location": internship.location,
             "stipend": internship.stipend,
             "duration": internship.duration,

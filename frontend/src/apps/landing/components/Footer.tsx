@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom';
 export const Footer: React.FC = () => {
   const companyLinks = [
     { name: 'About us', href: '/about' },
-    { name: 'We\'re hiring', href: '#careers' },
     { name: 'Team Diary', href: '#team-diary' },
     { name: 'Blog', href: '#blog' },
   ];
@@ -20,14 +19,13 @@ export const Footer: React.FC = () => {
 
   const forStudentsLinks = [
     { name: 'Our Services', href: '#services' },
-    { name: 'Free Job Alerts', href: '#job-alerts' },
-    { name: 'Resume Maker', href: '#resume-maker' },
-    { name: 'Jobs for Women', href: '#women-jobs' },
+    { name: 'Resume Maker', href: '/resume' },
   ];
 
   const legalLinks = [
     { name: 'Terms & Conditions', href: '/terms-and-conditions' },
-    { name: 'Privacy', href: '#privacy' },
+    { name: 'Privacy', href: '/privacy' },
+    { name: 'FAQ', href: '/faq' },
     { name: 'Contact us', href: '/contact' },
     { name: 'Sitemap', href: '#sitemap' },
   ];
@@ -181,7 +179,7 @@ export const Footer: React.FC = () => {
           transition={{ duration: 0.6, delay: 0.6 }}
           viewport={{ once: true }}
         >
-          <p>&copy; 2024 I-Intern. All rights reserved. Built with ❤️ for the future workforce.</p>
+          <p>&copy; I-Intern Technologies Private Limited.</p>
         </motion.div>
       </div>
     </footer>

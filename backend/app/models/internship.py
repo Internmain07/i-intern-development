@@ -24,6 +24,7 @@ class Internship(Base):
     skills = Column(Text, nullable=True)  # Comma-separated skills
     requirements = Column(Text, nullable=True)  # Text requirements
     benefits = Column(Text, nullable=True)  # Text benefits
+    about_company = Column(Text, nullable=True)
     required_skills = Column(String, nullable=True)  # Legacy field, keep for compatibility
     
     # Dates and status

@@ -5,6 +5,7 @@ export interface InternshipCreateRequest {
   title: string;
   description: string;
   required_skills: string;
+  about_company?: string;
 }
 
 export interface InternshipUpdateRequest {
@@ -36,6 +37,7 @@ export interface InternshipResponse {
   description: string;
   company_id: string;  // UUID as string
   company_name?: string | null;  // Company name for display
+  about_company?: string | null;
   location?: string | null;
   stipend?: number | null;
   duration?: string | null;
