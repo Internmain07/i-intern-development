@@ -23,7 +23,7 @@ def get_my_profile(
         "id": current_user.id,
         "email": current_user.email,
         "role": current_user.role,
-        "full_name": current_user.full_name,
+        "name": current_user.full_name,  # Return as 'name' for frontend consistency
         "phone": current_user.phone,
         "avatar_url": current_user.avatar_url,
     }
@@ -45,7 +45,7 @@ def get_my_profile(
                 "graduation_year": student_profile.graduation_year,
                 "grading_type": student_profile.grading_type,
                 "grading_score": student_profile.grading_score,
-                "skills": student_profile.skills,
+                "skills": ', '.join(student_profile.skills) if isinstance(student_profile.skills, list) else student_profile.skills,
             })
         else:
             # Add None values for student fields if no profile exists
@@ -87,7 +87,7 @@ def update_my_profile(
             raise HTTPException(status_code=404, detail="User not found")
         
         # Separate fields that belong to User vs StudentProfile
-        user_fields = ['full_name', 'phone', 'avatar_url']
+        user_fields = ['name', 'phone', 'avatar_url']  # Accept 'name' from frontend
         student_profile_fields = [
             'location', 'date_of_birth', 'bio', 'linkedin', 'github', 'portfolio',
             'university', 'major', 'graduation_year', 'grading_type', 'grading_score', 'skills'
@@ -96,7 +96,7 @@ def update_my_profile(
         # Update User fields
         for field in user_fields:
             if field in profile_data:
-                # Map 'name' to 'full_name' if needed
+                # Map 'name' to 'full_name' in the database
                 db_field = 'full_name' if field == 'name' else field
                 print(f"DEBUG: Setting User.{db_field} = {profile_data[field]}")
                 setattr(db_user, db_field, profile_data[field])
@@ -134,6 +134,13 @@ def update_my_profile(
                                 print(f"WARNING: Invalid date format for date_of_birth: {value}")
                                 value = None
                     
+                    # Handle skills conversion: convert comma-separated string to JSON array
+                    if db_field == 'skills' and value:
+                        if isinstance(value, str):
+                            # Convert comma-separated string to list
+                            value = [skill.strip() for skill in value.split(',') if skill.strip()]
+                            print(f"DEBUG: Converted skills string to array: {value}")
+                    
                     print(f"DEBUG: Setting StudentProfile.{db_field} = {value}")
                     setattr(student_profile, db_field, value)
             
@@ -154,7 +161,7 @@ def update_my_profile(
             "id": db_user.id,
             "email": db_user.email,
             "role": db_user.role,
-            "full_name": db_user.full_name,
+            "name": db_user.full_name,  # Return as 'name' for frontend consistency
             "phone": db_user.phone,
             "avatar_url": db_user.avatar_url,
         }
@@ -173,7 +180,7 @@ def update_my_profile(
                 "graduation_year": student_profile.graduation_year,
                 "grading_type": student_profile.grading_type,
                 "grading_score": student_profile.grading_score,
-                "skills": student_profile.skills,
+                "skills": ', '.join(student_profile.skills) if isinstance(student_profile.skills, list) else student_profile.skills,
             })
         else:
             # Add None values for student fields

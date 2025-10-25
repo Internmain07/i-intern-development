@@ -1,14 +1,18 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import Response
 from pydantic import BaseModel
 from typing import List, Optional
-import weasyprint  # Using weasyprint - better CSS support
+from sqlalchemy.orm import Session
+import weasyprint
 from jinja2 import Template
 import io
 
+from app.api import deps
+from app.models.user import User
+
 router = APIRouter()
 
-# Pydantic models
+# Pydantic models for Resume Builder
 class PersonalInfo(BaseModel):
     fullName: str
     email: str
@@ -341,8 +345,12 @@ HTML_TEMPLATE = """
 """
 
 @router.post("/generate")
-async def generate_resume(resume_data: ResumeData):
-    """Generates a PDF resume from the provided data using WeasyPrint."""
+async def generate_resume(
+    resume_data: ResumeData,
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_user),
+):
+    """Generates a PDF resume from the provided data using WeasyPrint and syncs to profile."""
     try:
         print(f"✅ Received resume generation request for: {resume_data.personalInfo.fullName}")
         print(f"📧 Email: {resume_data.personalInfo.email}")
@@ -350,6 +358,95 @@ async def generate_resume(resume_data: ResumeData):
         print(f"💼 Projects: {len(resume_data.projects)}")
         print(f"🏢 Experience: {len(resume_data.experience)}")
         print(f"🛠️ Skills: {len(resume_data.skills)}")
+        print(f"📜 Certifications: {len(resume_data.certifications)}")
+        
+        # Sync resume data to profile automatically
+        try:
+            from app.models.profile import StudentProfile
+            from datetime import datetime
+            
+            if current_user.role in ['student', 'intern']:
+                print("🔄 Syncing resume data to profile...")
+                
+                # Get or create student profile
+                student_profile = db.query(StudentProfile).filter(
+                    StudentProfile.user_id == current_user.id
+                ).first()
+                
+                if not student_profile:
+                    student_profile = StudentProfile(user_id=current_user.id)
+                    db.add(student_profile)
+                
+                # Sync Personal Info
+                personal_info = resume_data.personalInfo
+                if personal_info.fullName:
+                    current_user.full_name = personal_info.fullName
+                if personal_info.phone:
+                    current_user.phone = personal_info.phone
+                
+                # Sync URLs
+                if personal_info.githubLink:
+                    student_profile.github_url = personal_info.githubLink
+                if personal_info.linkedinProfile:
+                    student_profile.linkedin_url = personal_info.linkedinProfile
+                
+                # Sync Education (use first entry as primary education)
+                if resume_data.education and len(resume_data.education) > 0:
+                    primary_edu = resume_data.education[0]
+                    student_profile.university = primary_edu.college
+                    student_profile.major = primary_edu.degree
+                    
+                    # Try to extract graduation year from endDate
+                    if primary_edu.endDate:
+                        try:
+                            if '-' in primary_edu.endDate:
+                                year = primary_edu.endDate.split('-')[0]
+                            elif '/' in primary_edu.endDate:
+                                year = primary_edu.endDate.split('/')[-1]
+                            else:
+                                year = primary_edu.endDate[:4]
+                            student_profile.graduation_year = year
+                        except:
+                            pass
+                    
+                    # Sync CGPA
+                    if primary_edu.cgpa:
+                        student_profile.grading_type = "CGPA"
+                        student_profile.grading_score = primary_edu.cgpa
+                
+                # Sync Objective as Bio
+                if resume_data.objective:
+                    student_profile.bio = resume_data.objective
+                
+                # Sync Skills
+                if resume_data.skills and len(resume_data.skills) > 0:
+                    student_profile.skills = resume_data.skills
+                
+                # Sync Certifications
+                if resume_data.certifications and len(resume_data.certifications) > 0:
+                    cert_list = [
+                        {
+                            "name": cert.name,
+                            "institution": cert.institution,
+                            "year": cert.year
+                        }
+                        for cert in resume_data.certifications
+                    ]
+                    student_profile.certifications = cert_list
+                
+                # Update timestamp
+                student_profile.updated_at = datetime.utcnow()
+                
+                # Commit profile changes
+                db.commit()
+                db.refresh(current_user)
+                db.refresh(student_profile)
+                
+                print("✅ Profile synced successfully")
+        except Exception as sync_error:
+            print(f"⚠️ Warning: Failed to sync to profile: {str(sync_error)}")
+            # Continue with PDF generation even if sync fails
+            db.rollback()
         
         # Create Jinja2 template
         template = Template(HTML_TEMPLATE)

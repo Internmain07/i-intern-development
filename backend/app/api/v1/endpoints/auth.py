@@ -238,7 +238,7 @@ def get_current_user_profile(
                 "graduation_year": student_profile.graduation_year,
                 "grading_type": student_profile.grading_type,
                 "grading_score": student_profile.grading_score,
-                "skills": student_profile.skills,  # This is the skills array!
+                "skills": ', '.join(student_profile.skills) if isinstance(student_profile.skills, list) else student_profile.skills,
             })
         else:
             # Add None values

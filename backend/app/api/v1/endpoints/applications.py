@@ -67,7 +67,7 @@ def apply_for_internship(
     db.refresh(db_application)
     # Get the related internship and company
     internship = db.query(InternshipModel).filter(InternshipModel.id == db_application.internship_id).first()
-    company_id = internship.employer_profile_id if internship else None
+    company_id = str(internship.employer_profile_id) if internship and internship.employer_profile_id else "0"
     from app.schemas.application import Application
     return Application(
         id=db_application.id,
@@ -145,7 +145,7 @@ def get_my_applications(
                 "title": internship.title,
                 "position": internship.title,
                 "company": employer_profile.company_name if employer_profile else "Unknown Company",
-                "company_id": employer_profile.id if employer_profile else None,
+                "company_id": str(employer_profile.id) if employer_profile else "0",
                 "location": internship.location,
                 "stipend": internship.stipend,
                 "salary": f"₹{internship.stipend:,}" if internship.stipend else None,
@@ -215,7 +215,7 @@ def get_my_offers(
                 "position": internship.title,
                 "title": internship.title,
                 "company": employer_profile.company_name if employer_profile else "Unknown Company",
-                "company_id": employer_profile.id if employer_profile else None,
+                "company_id": str(employer_profile.id) if employer_profile else "0",
                 "salary": f"₹{internship.stipend:,}" if internship.stipend else None,
                 "stipend": internship.stipend,
                 "location": internship.location,
@@ -676,7 +676,7 @@ def respond_to_offer(
         "position": internship.title if internship else None,
         "title": internship.title if internship else None,
         "company": employer_profile.company_name if employer_profile else "Unknown Company",
-        "company_id": employer_profile.id if employer_profile else None,
+        "company_id": str(employer_profile.id) if employer_profile else "0",
         "salary": f"₹{internship.stipend:,}" if internship and internship.stipend else None,
         "stipend": internship.stipend if internship else None,
         "location": internship.location if internship else None,

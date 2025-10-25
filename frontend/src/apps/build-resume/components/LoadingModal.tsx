@@ -91,7 +91,7 @@ export const LoadingModal: React.FC<LoadingModalProps> = ({
               Resume Generated Successfully!
             </h3>
             <p className="text-neutral mb-6">
-              Your ATS-optimized resume is ready for download.
+              Your ATS-optimized resume has been downloaded automatically. If the download didn't start, click the button below.
             </p>
             <div className="w-full bg-aqua rounded-full h-2 mb-6 overflow-hidden relative">
               <motion.div

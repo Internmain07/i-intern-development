@@ -53,8 +53,8 @@ export const CertificationsStep: React.FC<CertificationsStepProps> = ({
       className="space-y-6"
     >
       <div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Certifications</h2>
-        <p className="text-gray-600">Add any relevant certifications or courses you've completed</p>
+        <h2 className="text-2xl font-bold text-[#004F4D] mb-2">Certifications</h2>
+        <p className="text-[#1F7368]">Add any relevant certifications or courses you've completed</p>
       </div>
 
       <AnimatePresence>
@@ -64,10 +64,10 @@ export const CertificationsStep: React.FC<CertificationsStepProps> = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="bg-white p-6 rounded-lg border-2 border-gray-200"
+            className="bg-white p-6 rounded-lg border-2 border-[#63D7C7]"
           >
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-700">
+              <h3 className="text-lg font-semibold text-[#1F7368]">
                 Certification {index + 1}
               </h3>
               <button
@@ -104,7 +104,7 @@ export const CertificationsStep: React.FC<CertificationsStepProps> = ({
 
       <motion.button
         onClick={addCertification}
-        className="w-full py-3 border-2 border-dashed border-accentTeal rounded-lg text-primaryTeal hover:border-primaryTeal hover:text-darkTeal transition-colors duration-200 flex items-center justify-center gap-2"
+        className="w-full py-3 border-2 border-dashed border-[#63D7C7] rounded-lg text-[#1F7368] hover:border-[#1F7368] hover:text-[#004F4D] transition-colors duration-200 flex items-center justify-center gap-2"
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
       >
@@ -115,7 +115,7 @@ export const CertificationsStep: React.FC<CertificationsStepProps> = ({
       <div className="flex justify-between">
         <motion.button
           onClick={onPrev}
-          className="px-6 py-3 border border-accentTeal text-primaryTeal rounded-lg hover:bg-aqua hover:text-darkTeal transition-colors duration-200"
+          className="px-6 py-3 border border-[#63D7C7] text-[#1F7368] rounded-lg hover:bg-[#63D7C7]/10 hover:text-[#004F4D] transition-colors duration-200"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
@@ -123,7 +123,7 @@ export const CertificationsStep: React.FC<CertificationsStepProps> = ({
         </motion.button>
         <motion.button
           onClick={onSubmit}
-          className="px-6 py-3 bg-primaryTeal text-white rounded-lg hover:bg-darkTeal transition-colors duration-200"
+          className="px-6 py-3 bg-[#1F7368] text-white rounded-lg hover:bg-[#004F4D] transition-colors duration-200 shadow-md"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >

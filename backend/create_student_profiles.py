@@ -4,7 +4,7 @@ Run this after deploying the fix to create missing student_profile records
 """
 from app.db.session import SessionLocal
 from app.models.user import User
-from app.models.student_profile_optimized import StudentProfile
+from app.models.profile import StudentProfile
 
 def create_missing_student_profiles():
     """Create student_profile records for students who don't have one"""

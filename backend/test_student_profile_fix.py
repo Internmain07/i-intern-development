@@ -148,7 +148,7 @@ def test_database_direct():
     try:
         from app.db.session import SessionLocal
         from app.models.user import User
-        from app.models.student_profile_optimized import StudentProfile
+        from app.models.profile import StudentProfile
         
         db = SessionLocal()
         

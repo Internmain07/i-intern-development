@@ -13,6 +13,7 @@ import { SkillsStep } from './components/steps/SkillsStep';
 import { CertificationsStep } from './components/steps/CertificationsStep';
 import { LoadingModal } from './components/LoadingModal';
 import { Footer } from '@/apps/landing/components/Footer';
+import { syncResumeToProfile } from '@/services/resumeSync';
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -147,6 +148,25 @@ export default function App() {
       setPdfBlob(blob);
       setProgress(100);
       setModalStatus('success');
+
+      // Automatically trigger download
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${resumeData.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      // Sync resume data to profile (the backend does this automatically, but we can also call it explicitly)
+      try {
+        console.log('📋 Profile will be auto-synced by backend');
+        // Optional: Call syncResumeToProfile(resumeData) if you want explicit confirmation
+      } catch (syncError) {
+        console.warn('Profile sync may have failed, but PDF was generated successfully', syncError);
+        // Don't throw error, PDF generation succeeded
+      }
     } catch (error) {
       console.error('Error generating resume:', error);
       setModalStatus('error');
