@@ -9,6 +9,7 @@ import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
 import { Badge } from "@/shared/components/ui/badge";
+import { Navbar } from "../components/layout/Navbar";
 import {
   Select,
   SelectContent,
@@ -449,7 +450,9 @@ const EditProfilePage = () => {
 
   if (isFetching) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="flex items-center justify-center min-h-[80vh]">
         <div className="text-center">
           <User className="mx-auto h-16 w-16 text-primary animate-pulse mb-4" />
           <h3 className="text-xl font-semibold text-foreground mb-2">
@@ -459,12 +462,14 @@ const EditProfilePage = () => {
             Please wait while we fetch your data
           </p>
         </div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen">
+      <Navbar />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <motion.div

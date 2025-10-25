@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import ChatWidget from '@/apps/iva/components/ChatWidget';
 import {
   Search,
   MapPin,
@@ -697,6 +698,7 @@ const BrowseInternshipsPage: React.FC = () => {
       </div>
 
       <Footer />
+      <ChatWidget />
     </>
   );
 };

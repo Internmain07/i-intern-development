@@ -9,6 +9,7 @@ import { ApplicationsPage } from './pages/ApplicationsPage';
 import SettingsPage from './pages/SettingsPage';
 import Index from './pages/Index';
 import NotFound from './pages/NotFound';
+import ChatWidget from '@/apps/iva/components/ChatWidget';
 
 const InternsDashboard: React.FC = () => {
   return (
@@ -30,6 +31,7 @@ const InternsDashboard: React.FC = () => {
         <Route path="*" element={<NotFound />} />
       </Routes>
       </div>
+      <ChatWidget />
     </div>
   );
 };

@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/sha
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Switch } from "@/shared/components/ui/switch";
+import { Navbar } from "../components/layout/Navbar";
 import { useToast } from "@/shared/hooks/use-toast";
 import {
   AlertDialog,
@@ -129,6 +130,7 @@ const SettingsPage = () => {
 
   return (
     <div className="min-h-screen">
+      <Navbar />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <motion.div

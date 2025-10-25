@@ -34,6 +34,7 @@ interface InternshipFormData {
   companyName: string;
   companyLogo?: string;
   industry: string;
+  aboutCompany: string;
   status?: 'Active' | 'Draft';
 }
 
@@ -53,7 +54,8 @@ const initialForm: InternshipFormData = {
   deadline: "",
   companyName: "",
   companyLogo: "",
-  industry: ""
+  industry: "",
+  aboutCompany: ""
 };
 
 
@@ -181,6 +183,9 @@ export default function PostInternshipPage() {
       skills: form.skills.join(', '),
       requirements: form.requirements.join(', '),
       benefits: form.benefits.join(', '),
+      
+      // About the company
+      about_company: form.aboutCompany,
       
       // Dates
       deadline: form.deadline,
@@ -384,6 +389,20 @@ export default function PostInternshipPage() {
                   placeholder="Describe the internship role, responsibilities, and what the intern will learn..." 
                   required 
                   rows={5}
+                  className="w-full px-4 py-3 border-2 border-[#63D7C7]/30 rounded-xl focus:ring-2 focus:ring-[#1F7368] focus:border-[#1F7368] transition-all outline-none resize-none bg-white" 
+                />
+              </div>
+              
+              <div className="mt-6">
+                <label className="block text-sm font-semibold text-[#1F7368] mb-2">
+                  About the Company
+                </label>
+                <textarea 
+                  name="aboutCompany" 
+                  value={form.aboutCompany} 
+                  onChange={handleChange} 
+                  placeholder="Tell candidates about your company, culture, mission, and what makes it a great place to work..." 
+                  rows={4}
                   className="w-full px-4 py-3 border-2 border-[#63D7C7]/30 rounded-xl focus:ring-2 focus:ring-[#1F7368] focus:border-[#1F7368] transition-all outline-none resize-none bg-white" 
                 />
               </div>

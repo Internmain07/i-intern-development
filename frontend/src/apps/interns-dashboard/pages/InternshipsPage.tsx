@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import InternshipDetailsModal from "../components/InternshipDetailsModal";
+import { Navbar } from "../components/layout/Navbar";
 import { internshipService } from "@/services/internship.service";
 import { applicationService } from "@/services/application.service";
 import { useToast } from "@/shared/components/ui/use-toast";
@@ -283,6 +284,7 @@ const InternshipsPage = () => {
 
   return (
     <div className="min-h-screen">
+      <Navbar />
       <div className="container mx-auto px-4 py-8">
         {/* Loading State */}
         {isLoading ? (

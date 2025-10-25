@@ -34,6 +34,7 @@ class Internship(Base):
     requirements = Column(Text, nullable=True)  # Text requirements
     benefits = Column(Text, nullable=True)  # Text benefits
     required_skills = Column(String, nullable=True)  # Legacy field, keep for compatibility
+    about_company = Column(Text, nullable=True)  # About the company posting the internship
     
     # Dates and status
     deadline = Column(Date, nullable=True)

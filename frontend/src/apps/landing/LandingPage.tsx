@@ -16,6 +16,7 @@ import { VerifyOTPPage } from './components/VerifyOTPPage';
 import { ResetPasswordPage } from './components/ResetPasswordPage';
 import { EmailVerificationPage } from './components/EmailVerificationPage';
 import PublicInternshipPage from './pages/PublicInternshipPage';
+import { FAQPage } from '../faq/pages/FAQPage';
 
 
 const LandingPage: React.FC = () => {
@@ -25,6 +26,7 @@ const LandingPage: React.FC = () => {
       <Route path="/about" element={<AboutPage />} />
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/contact" element={<ContactPage />} />
+      <Route path="/faq" element={<FAQPage />} />
       <Route path="/hire-interns" element={<HireInternsPage />} />
       <Route path="/browse-internships" element={<BrowseInternshipsPage />} />
       <Route path="/terms-and-conditions" element={<TermsAndConditions />} />

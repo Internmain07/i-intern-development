@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, internships, applications, landing, users, profile, companies, admin, resume, resume_sync
+from app.api.v1.endpoints import auth, internships, applications, landing, users, profile, companies, admin, resume, resume_sync, notifications
 
 api_router = APIRouter()
 
@@ -13,3 +13,4 @@ api_router.include_router(companies.router, prefix="/companies", tags=["companie
 api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
 api_router.include_router(resume.router, prefix="/resume", tags=["resume"])
 api_router.include_router(resume_sync.router, prefix="/resume", tags=["resume-sync"])
+api_router.include_router(notifications.router, prefix="/notifications", tags=["notifications"])

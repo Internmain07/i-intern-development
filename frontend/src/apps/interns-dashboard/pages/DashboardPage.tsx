@@ -9,6 +9,7 @@ import { Recommendations } from "../components/dashboard/Recommendations";
 import { Offers } from "../components/dashboard/Offers";
 import { QuickStats } from "../components/dashboard/QuickStats";
 import { TrendingCompanies } from "../components/dashboard/TrendingCompanies";
+import { Navbar } from "../components/layout/Navbar";
 import { apiClient } from "@/api";
 import { useAuth } from "@/auth/AuthContext";
 
@@ -59,6 +60,7 @@ const DashboardPage = () => {
 
   return (
     <div className="min-h-screen">
+      <Navbar />
       <div className="container mx-auto px-4 py-8 max-w-7xl">
 
         {/* Responsive Grid Layout - Reorganized by Importance */}

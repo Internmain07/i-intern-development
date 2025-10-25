@@ -3,6 +3,7 @@ import { Footer } from '../components/Footer';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import { motion, Variants } from 'framer-motion';
+import ChatWidget from '@/apps/iva/components/ChatWidget';
 import { 
   Shield, 
   Zap, 
@@ -313,6 +314,7 @@ const AboutPage = () => {
         </main>
       </div>
       <Footer />
+      <ChatWidget />
     </>
   );
 };

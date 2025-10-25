@@ -5,6 +5,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { Badge } from '@/shared/components/ui/badge';
 import { Input } from '@/shared/components/ui/input';
+import { Navbar } from '../components/layout/Navbar';
 import { apiClient } from '@/api';
 import { useNavigate } from 'react-router-dom';
 import { StudentApplicationDetailsModal } from '../components/StudentApplicationDetailsModal';
@@ -215,7 +216,9 @@ export const ApplicationsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#004F4D] via-[#1F7368] to-[#004F4D] p-6">
+      <div className="min-h-screen bg-gradient-to-br from-[#004F4D] via-[#1F7368] to-[#004F4D]">
+        <Navbar />
+        <div className="p-6">
         <div className="max-w-7xl mx-auto">
           <div className="animate-pulse space-y-6">
             <div className="h-8 bg-white/20 rounded w-1/4"></div>
@@ -231,12 +234,15 @@ export const ApplicationsPage: React.FC = () => {
             </div>
           </div>
         </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#004F4D] via-[#1F7368] to-[#004F4D] p-6">
+    <div className="min-h-screen bg-gradient-to-br from-[#004F4D] via-[#1F7368] to-[#004F4D]">
+      <Navbar />
+      <div className="p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <motion.div
@@ -497,6 +503,7 @@ export const ApplicationsPage: React.FC = () => {
             setSelectedApplication(null);
           }}
         />
+      </div>
       </div>
     </div>
   );

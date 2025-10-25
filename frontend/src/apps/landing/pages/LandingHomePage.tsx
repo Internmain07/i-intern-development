@@ -9,6 +9,7 @@ import { Stats } from '../components/Stats';
 import { CTABanner } from '../components/CTABanner';
 import { Newsletter } from '../components/Newsletter';
 import { Footer } from '../components/Footer';
+import ChatWidget from '@/apps/iva/components/ChatWidget';
 
 const LandingHomePage: React.FC = () => {
   return (
@@ -24,6 +25,7 @@ const LandingHomePage: React.FC = () => {
       <CTABanner />
       <Newsletter />
       <Footer />
+      <ChatWidget />
     </>
   );
 };

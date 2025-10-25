@@ -15,6 +15,7 @@ class InternshipBase(BaseModel):
     requirements: Optional[str] = None
     benefits: Optional[str] = None
     required_skills: Optional[str] = None  # Legacy field
+    about_company: Optional[str] = None  # About the company
     deadline: Optional[date] = None
     date_posted: Optional[date] = None
     status: Optional[str] = None
@@ -38,6 +39,7 @@ class InternshipPartialUpdate(BaseModel):
     requirements: Optional[str] = None
     benefits: Optional[str] = None
     required_skills: Optional[str] = None
+    about_company: Optional[str] = None
     deadline: Optional[date] = None
     date_posted: Optional[date] = None
     status: Optional[str] = None

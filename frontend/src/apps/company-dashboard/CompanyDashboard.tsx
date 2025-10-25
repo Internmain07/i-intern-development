@@ -11,6 +11,7 @@ import PostInternshipPage from './pages/PostInternshipPage';
 import { EditInternshipPage } from './pages/EditInternshipPage';
 import { CompanyAuthGuard } from './components/CompanyAuthGuard';
 import NotFound from './pages/NotFound';
+import ChatWidget from '@/apps/iva/components/ChatWidget';
 
 const CompanyDashboard: React.FC = () => {
   return (
@@ -29,6 +30,7 @@ const CompanyDashboard: React.FC = () => {
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
+      <ChatWidget />
     </CompanyAuthGuard>
   );
 };

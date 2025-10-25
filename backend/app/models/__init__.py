@@ -7,12 +7,14 @@ Optimized Models - Clean Architecture
 - Application: Student applications
 - WorkExperience: Work history
 - Project: Student projects
+- Notification: User notifications
 """
 from app.models.user import User
 from app.models.company import EmployerProfile
 from app.models.profile import StudentProfile, WorkExperience, Project
 from app.models.internship import Internship
 from app.models.application import Application
+from app.models.notification import Notification
 
 __all__ = [
     "User",
@@ -21,5 +23,6 @@ __all__ = [
     "Internship", 
     "Application", 
     "WorkExperience", 
-    "Project"
+    "Project",
+    "Notification"
 ]
