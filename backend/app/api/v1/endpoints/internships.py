@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List, Dict, Any, Optional
 import uuid
 from datetime import date, datetime, timedelta, timezone
-from sqlalchemy import func, extract
+from sqlalchemy import func, extract, case
 from app.api import deps
 from app.schemas.internship import Internship, InternshipCreate, InternshipUpdate, InternshipPartialUpdate
 from app.models.internship import Internship as InternshipModel
@@ -185,8 +185,8 @@ def get_monthly_applications(
         extract('month', ApplicationModel.application_date).label('month'),
         extract('year', ApplicationModel.application_date).label('year'),
         func.count(ApplicationModel.id).label('total'),
-        func.sum(func.case((ApplicationModel.status.in_(['Hired', 'hired', 'Accepted', 'accepted']), 1), else_=0)).label('hired'),
-        func.sum(func.case((ApplicationModel.status.in_(['Rejected', 'rejected']), 1), else_=0)).label('rejected')
+        func.sum(case((ApplicationModel.status.in_(['Hired', 'hired', 'Accepted', 'accepted']), 1), else_=0)).label('hired'),
+        func.sum(case((ApplicationModel.status.in_(['Rejected', 'rejected']), 1), else_=0)).label('rejected')
     ).filter(
         ApplicationModel.internship_id.in_(internship_ids),
         ApplicationModel.application_date >= six_months_ago
