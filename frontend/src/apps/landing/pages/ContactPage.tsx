@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { motion, Variants } from 'framer-motion';
+import { contactService, type ContactSubmission } from '@/services/contact.service';
 
 // Helper component for SVG icons (unchanged)
 type IconName = 'location' | 'mail' | 'phone' | 'clock' | 'linkedin' | 'twitter' | 'instagram' | 'facebook';
@@ -77,6 +78,107 @@ const staggerContainer: Variants = {
 };
 
 const ContactPage = () => {
+  // Form state
+  const [formData, setFormData] = useState<ContactSubmission>({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+  });
+
+  const [errors, setErrors] = useState<Partial<Record<keyof ContactSubmission, string>>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  // Handle input changes
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({ ...prev, [id]: value }));
+    
+    // Clear error for this field when user starts typing
+    if (errors[id as keyof ContactSubmission]) {
+      setErrors(prev => ({ ...prev, [id]: '' }));
+    }
+  };
+
+  // Validate form
+  const validateForm = (): boolean => {
+    const newErrors: Partial<Record<keyof ContactSubmission, string>> = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    if (!formData.subject.trim()) {
+      newErrors.subject = 'Subject is required';
+    }
+
+    if (!formData.message.trim()) {
+      newErrors.message = 'Message is required';
+    } else if (formData.message.trim().length < 10) {
+      newErrors.message = 'Message must be at least 10 characters long';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate form
+    if (!validateForm()) {
+      setSubmitStatus({ type: 'error', message: 'Please fix the errors in the form' });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+
+    try {
+      const response = await contactService.submitContactForm(formData);
+      
+      // Success - reset form and show success message
+      setFormData({ name: '', email: '', subject: '', message: '' });
+      setSubmitStatus({ 
+        type: 'success', 
+        message: response?.message || 'Thank you for contacting us! We\'ll get back to you soon.' 
+      });
+
+      // Scroll to top to show success message
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error: any) {
+      console.error('Error submitting contact form:', error);
+      
+      // Handle different error response structures
+      let errorMessage = 'Failed to send message. Please try again later.';
+      
+      if (error?.response?.data) {
+        // If error has response.data, try to extract message
+        errorMessage = error.response.data.detail || 
+                      error.response.data.message || 
+                      JSON.stringify(error.response.data);
+      } else if (error?.message) {
+        // If error has a message property directly
+        errorMessage = error.message;
+      }
+      
+      setSubmitStatus({ 
+        type: 'error', 
+        message: errorMessage
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -101,6 +203,24 @@ const ContactPage = () => {
           </motion.p>
         </motion.div>
       </header>
+
+      {/* Status Message */}
+      {submitStatus && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="container mx-auto px-6 mt-6"
+        >
+          <div className={`p-4 rounded-lg ${
+            submitStatus.type === 'success' 
+              ? 'bg-green-100 border border-green-400 text-green-700' 
+              : 'bg-red-100 border border-red-400 text-red-700'
+          }`}>
+            <p className="font-medium">{submitStatus.message}</p>
+          </div>
+        </motion.div>
+      )}
 
       <main>
         {/* Contact Form and Info Section */}
@@ -151,7 +271,7 @@ const ContactPage = () => {
                 <h2 className="text-3xl font-bold text-gray-900">Send Us a Message</h2>
                 <motion.form 
                     className="mt-8 space-y-6"
-                    // You can optionally add staggering to the form fields themselves
+                    onSubmit={handleSubmit}
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true }}
@@ -159,25 +279,83 @@ const ContactPage = () => {
                 >
                   <motion.div variants={fadeInUp} className="grid sm:grid-cols-2 gap-6">
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
-                      <input type="text" id="name" className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500" />
+                      <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name *</label>
+                      <input 
+                        type="text" 
+                        id="name" 
+                        value={formData.name}
+                        onChange={handleChange}
+                        className={`mt-1 block w-full px-4 py-3 border rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 ${
+                          errors.name ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="Enter your full name"
+                      />
+                      {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
                     </div>
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email Address</label>
-                      <input type="email" id="email" className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500" />
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email Address *</label>
+                      <input 
+                        type="email" 
+                        id="email" 
+                        value={formData.email}
+                        onChange={handleChange}
+                        className={`mt-1 block w-full px-4 py-3 border rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 ${
+                          errors.email ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="your.email@example.com"
+                      />
+                      {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
                     </div>
                   </motion.div>
                   <motion.div variants={fadeInUp}>
-                    <label htmlFor="subject" className="block text-sm font-medium text-gray-700">Subject</label>
-                    <input type="text" id="subject" className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500" />
+                    <label htmlFor="subject" className="block text-sm font-medium text-gray-700">Subject *</label>
+                    <input 
+                      type="text" 
+                      id="subject" 
+                      value={formData.subject}
+                      onChange={handleChange}
+                      className={`mt-1 block w-full px-4 py-3 border rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 ${
+                        errors.subject ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="What is this regarding?"
+                    />
+                    {errors.subject && <p className="mt-1 text-sm text-red-600">{errors.subject}</p>}
                   </motion.div>
                   <motion.div variants={fadeInUp}>
-                    <label htmlFor="message" className="block text-sm font-medium text-gray-700">Message</label>
-                    <textarea id="message" rows={5} className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500"></textarea>
+                    <label htmlFor="message" className="block text-sm font-medium text-gray-700">Message *</label>
+                    <textarea 
+                      id="message" 
+                      rows={5} 
+                      value={formData.message}
+                      onChange={handleChange}
+                      className={`mt-1 block w-full px-4 py-3 border rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 ${
+                        errors.message ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="Tell us more about your inquiry..."
+                    ></textarea>
+                    {errors.message && <p className="mt-1 text-sm text-red-600">{errors.message}</p>}
                   </motion.div>
                   <motion.div variants={fadeInUp}>
-                    <button type="submit" className="w-full inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-lg font-bold rounded-md text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-transform duration-300 hover:scale-105 active:scale-100">
-                      Send Message
+                    <button 
+                      type="submit" 
+                      disabled={isSubmitting}
+                      className={`w-full inline-flex justify-center items-center py-3 px-6 border border-transparent shadow-sm text-lg font-bold rounded-md text-white transition-all duration-300 ${
+                        isSubmitting 
+                          ? 'bg-teal-400 cursor-not-allowed' 
+                          : 'bg-teal-600 hover:bg-teal-700 hover:scale-105 active:scale-100'
+                      } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500`}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Sending...
+                        </>
+                      ) : (
+                        'Send Message'
+                      )}
                     </button>
                   </motion.div>
                 </motion.form>

@@ -8,6 +8,7 @@ import AdminInternshipPostings from './pages/admin/AdminInternshipPostings';
 import AdminDatabase from './pages/admin/AdminDatabase';
 import AdminProfile from './pages/admin/AdminProfile';
 import AdminSettings from './pages/admin/AdminSettings';
+import AdminContactMessages from './pages/admin/AdminContactMessages';
 import NotFound from './pages/NotFound';
 
 const AdminDashboardApp: React.FC = () => {
@@ -21,6 +22,7 @@ const AdminDashboardApp: React.FC = () => {
         <Route path="interns" element={<AdminInterns />} />
         <Route path="postings" element={<AdminInternshipPostings />} />
         <Route path="database" element={<AdminDatabase />} />
+        <Route path="contact" element={<AdminContactMessages />} />
         <Route path="profile" element={<AdminProfile />} />
         <Route path="settings" element={<AdminSettings />} />
       </Route>

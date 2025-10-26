@@ -7,7 +7,8 @@ import {
   Settings,
   Database,
   ChevronLeft,
-  ChevronRight 
+  ChevronRight,
+  Mail
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/lib/utils";
@@ -18,6 +19,7 @@ const navigation = [
   { name: "Employers", href: "/admin/employers", icon: Building2 },
   { name: "Interns", href: "/admin/interns", icon: Users },
   { name: "Internship Postings", href: "/admin/postings", icon: FileText },
+  { name: "Contact Messages", href: "/admin/contact", icon: Mail },
   { name: "Database Manager", href: "/admin/database", icon: Database },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];

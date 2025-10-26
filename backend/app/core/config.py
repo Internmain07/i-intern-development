@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     # Brevo (Sendinblue) Email API
     BREVO_API_KEY: Optional[str] = None
     FROM_EMAIL: Optional[str] = "noreply@i-intern.com"
+    ADMIN_EMAIL: Optional[str] = "admin@i-intern.com"
+    CONTACT_EMAIL: Optional[str] = "contact@i-intern.com"
     
     # Email settings (SMTP fallback - optional)
     SMTP_SERVER: Optional[str] = "smtp.gmail.com"

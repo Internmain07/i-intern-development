@@ -17,6 +17,7 @@ from app.models.internship import Internship
 from app.models.application import Application
 from app.models.notification import Notification
 from app.models.internship_history import InternshipHistory
+from app.models.contact import ContactMessage, ContactStatus
 
 __all__ = [
     "User",
@@ -27,5 +28,7 @@ __all__ = [
     "WorkExperience", 
     "Project",
     "Notification",
-    "InternshipHistory"
+    "InternshipHistory",
+    "ContactMessage",
+    "ContactStatus"
 ]
