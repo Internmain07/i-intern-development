@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, MapPin, Building, ExternalLink, Lock, Calendar, IndianRupee, Clock, Users, Bookmark } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { useEffect, useState } from "react";
 import { internshipService, InternshipResponse } from "@/services/internship.service";
@@ -41,11 +41,13 @@ const PublicInternshipPage = () => {
   }, [id, toast]);
 
   const handleLoginToViewDetails = (internshipId: string) => {
-    navigate(`/login?returnUrl=/interns/internship/${internshipId}`);
+    // Navigate to login with returnUrl pointing to the internship detail page in the intern dashboard
+    navigate(`/login?returnUrl=${encodeURIComponent(`/interns/internship/${internshipId}`)}`);
   };
 
   const handleBookmark = (internshipId: string) => {
-    navigate(`/register/student?returnUrl=/browse-internships&bookmark=${internshipId}`);
+    // Navigate to registration with returnUrl pointing to the internship detail page
+    navigate(`/register/student?returnUrl=${encodeURIComponent(`/interns/internship/${internshipId}`)}`);
   };
 
   const formatDate = (dateString: string) => {
@@ -234,7 +236,7 @@ const PublicInternshipPage = () => {
               Join I-Intern to view full details, apply with one click, and discover thousands of other opportunities.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/register/student">
+              <Link to={`/register/student?returnUrl=${encodeURIComponent(`/interns/internship/${internship.id}`)}`}>
                 <Button 
                   variant="secondary"
                   className="bg-white text-[#1F7368] hover:bg-gray-100 font-semibold px-8 py-3 w-full sm:w-auto"
@@ -243,7 +245,7 @@ const PublicInternshipPage = () => {
                   Sign Up as Student
                 </Button>
               </Link>
-              <Link to="/login">
+              <Link to={`/login?returnUrl=${encodeURIComponent(`/interns/internship/${internship.id}`)}`}>
                 <Button 
                   variant="outline"
                   className="bg-white text-[#1F7368] hover:bg-gray-100 font-semibold px-8 py-3 w-full sm:w-auto"

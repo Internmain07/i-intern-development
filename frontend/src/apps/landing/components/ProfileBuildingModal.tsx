@@ -7,9 +7,10 @@ interface ProfileBuildingModalProps {
   isOpen: boolean;
   onClose: () => void;
   role: string;
+  returnUrl?: string;
 }
 
-export const ProfileBuildingModal: React.FC<ProfileBuildingModalProps> = ({ isOpen, onClose, role }) => {
+export const ProfileBuildingModal: React.FC<ProfileBuildingModalProps> = ({ isOpen, onClose, role, returnUrl }) => {
   const navigate = useNavigate();
 
   const handleBuildProfile = () => {
@@ -23,7 +24,10 @@ export const ProfileBuildingModal: React.FC<ProfileBuildingModalProps> = ({ isOp
 
   const handleSkip = () => {
     onClose();
-    if (role === 'intern') {
+    // If returnUrl exists, navigate to it
+    if (returnUrl) {
+      navigate(returnUrl);
+    } else if (role === 'intern') {
       navigate('/interns/dashboard');
     } else if (role === 'company') {
       navigate('/company/dashboard');

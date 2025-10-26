@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, User, Calendar, Phone, GraduationCap, MapPin, Globe, Mail, Lock, Eye, EyeOff, CheckCircle } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { authService } from '@/services/auth.service';
 
 interface FormData {
@@ -23,6 +23,7 @@ interface FormErrors {
 
 export const StudentRegistrationPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
     lastName: '',
@@ -148,12 +149,16 @@ export const StudentRegistrationPage: React.FC = () => {
         
         setIsRegistered(true);
         
+        // Get returnUrl parameter if it exists
+        const returnUrl = searchParams.get('returnUrl');
+        
         // Redirect to email verification page after 2 seconds
         setTimeout(() => {
           navigate('/verify-email', { 
             state: { 
               email: formData.email,
-              role: 'intern'
+              role: 'intern',
+              returnUrl: returnUrl || undefined // Pass returnUrl to verification page
             } 
           });
         }, 2000);

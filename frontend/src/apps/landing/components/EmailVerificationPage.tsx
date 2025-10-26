@@ -12,6 +12,7 @@ export const EmailVerificationPage: React.FC = () => {
   const { login } = useAuth(); // Get login function from AuthContext
   const email = location.state?.email || '';
   const role = location.state?.role || 'intern'; // Get role from navigation state
+  const returnUrl = location.state?.returnUrl; // Get returnUrl if passed
   
   const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -178,6 +179,7 @@ export const EmailVerificationPage: React.FC = () => {
             isOpen={showProfileModal}
             onClose={() => setShowProfileModal(false)}
             role={role}
+            returnUrl={returnUrl}
           />
         </motion.div>
       </div>

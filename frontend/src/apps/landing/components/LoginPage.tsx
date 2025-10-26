@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Mail, Lock, Eye, EyeOff, GraduationCap } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../auth/AuthContext';
 import { authService } from '@/services/auth.service';
 
@@ -13,6 +13,7 @@ export const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { login } = useAuth(); // <-- Use the login function from AuthContext
 
   // Load saved email on component mount (for Remember Me)
@@ -56,19 +57,28 @@ export const LoginPage: React.FC = () => {
         // Now set the auth state with the correct role
         login(data.access_token, userProfile.role);
         
-        // Redirect based on role
-        if (userProfile.role === 'intern') {
-          console.log('➡️  Redirecting to intern dashboard');
-          navigate('/interns/dashboard');
-        } else if (userProfile.role === 'company') {
-          console.log('➡️  Redirecting to company dashboard');
-          navigate('/company/dashboard');
-        } else if (userProfile.role === 'admin') {
-          console.log('➡️  Redirecting to admin dashboard');
-          navigate('/admin/dashboard');
+        // Check if there's a returnUrl parameter
+        const returnUrl = searchParams.get('returnUrl');
+        
+        if (returnUrl) {
+          // If returnUrl exists, redirect to it
+          console.log('➡️  Redirecting to returnUrl:', returnUrl);
+          navigate(returnUrl);
         } else {
-          console.log('⚠️  Unknown role, redirecting to home');
-          navigate('/');
+          // Otherwise, redirect based on role
+          if (userProfile.role === 'intern') {
+            console.log('➡️  Redirecting to intern dashboard');
+            navigate('/interns/dashboard');
+          } else if (userProfile.role === 'company') {
+            console.log('➡️  Redirecting to company dashboard');
+            navigate('/company/dashboard');
+          } else if (userProfile.role === 'admin') {
+            console.log('➡️  Redirecting to admin dashboard');
+            navigate('/admin/dashboard');
+          } else {
+            console.log('⚠️  Unknown role, redirecting to home');
+            navigate('/');
+          }
         }
       } catch (profileError) {
         // If profile fetch fails, clean up and show error
