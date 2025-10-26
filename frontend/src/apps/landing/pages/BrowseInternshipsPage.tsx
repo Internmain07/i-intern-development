@@ -20,6 +20,7 @@ import {
   SlidersHorizontal,
   X,
   TrendingUp,
+  ExternalLink,
 } from 'lucide-react';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
@@ -30,6 +31,7 @@ import { Badge } from '@/shared/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { Slider } from '@/shared/components/ui/slider';
+import { useAuth } from '@/auth/AuthContext';
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -53,6 +55,7 @@ type SortOption = 'newest' | 'deadline' | 'stipend-high' | 'stipend-low' | 'appl
 
 const BrowseInternshipsPage: React.FC = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, role } = useAuth();
   const [internships, setInternships] = useState<PublicInternship[]>([]);
   const [filteredInternships, setFilteredInternships] = useState<PublicInternship[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -210,12 +213,29 @@ const BrowseInternshipsPage: React.FC = () => {
   };
 
   const handleBookmark = (internshipId: string) => {
-    // Show login prompt for guest users
-    navigate(`/register/student?returnUrl=/browse-internships&bookmark=${internshipId}`);
+    // If user is already logged in, redirect to internship details
+    if (isAuthenticated && role === 'intern') {
+      navigate(`/interns/internship/${internshipId}`);
+    } else {
+      // Show login prompt for guest users
+      navigate(`/register/student?returnUrl=${encodeURIComponent(`/interns/internship/${internshipId}`)}`);
+    }
   };
 
   const handleLoginToViewDetails = (internshipId: string) => {
-    navigate(`/login?returnUrl=/interns/internship/${internshipId}`);
+    // If user is already logged in, redirect them directly to the internship details
+    if (isAuthenticated) {
+      if (role === 'intern') {
+        navigate(`/interns/internship/${internshipId}`);
+      } else if (role === 'company') {
+        navigate(`/company/dashboard`); // Companies view their own internships
+      } else {
+        navigate('/'); // Fallback
+      }
+    } else {
+      // If not logged in, redirect to login with returnUrl
+      navigate(`/login?returnUrl=${encodeURIComponent(`/interns/internship/${internshipId}`)}`);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -594,8 +614,17 @@ const BrowseInternshipsPage: React.FC = () => {
                         onClick={() => handleLoginToViewDetails(internship.id)}
                         className="w-full bg-gradient-to-r from-[#1F7368] to-[#004F4D] hover:from-[#004F4D] hover:to-[#1F7368] text-white shadow-lg shadow-[#1F7368]/30 hover:shadow-xl hover:shadow-[#004F4D]/40 transition-all duration-300 font-semibold"
                       >
-                        <Lock size={16} className="mr-2" />
-                        Login to View Details & Apply
+                        {isAuthenticated ? (
+                          <>
+                            <ExternalLink size={16} className="mr-2" />
+                            View Full Details & Apply
+                          </>
+                        ) : (
+                          <>
+                            <Lock size={16} className="mr-2" />
+                            Login to View Details & Apply
+                          </>
+                        )}
                       </Button>
                     </CardContent>
                   </Card>

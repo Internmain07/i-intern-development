@@ -9,11 +9,13 @@ import { internshipService, InternshipResponse } from "@/services/internship.ser
 import { useToast } from "@/shared/components/ui/use-toast";
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
+import { useAuth } from '@/auth/AuthContext';
 
 const PublicInternshipPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAuthenticated, role } = useAuth();
   const [internship, setInternship] = useState<InternshipResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -41,13 +43,30 @@ const PublicInternshipPage = () => {
   }, [id, toast]);
 
   const handleLoginToViewDetails = (internshipId: string) => {
-    // Navigate to login with returnUrl pointing to the internship detail page in the intern dashboard
-    navigate(`/login?returnUrl=${encodeURIComponent(`/interns/internship/${internshipId}`)}`);
+    // If user is already logged in, redirect them directly to the internship details
+    if (isAuthenticated) {
+      if (role === 'intern') {
+        navigate(`/interns/internship/${internshipId}`);
+      } else if (role === 'company') {
+        navigate(`/company/dashboard`); // Companies view their own internships
+      } else {
+        navigate('/'); // Fallback
+      }
+    } else {
+      // If not logged in, redirect to login with returnUrl
+      navigate(`/login?returnUrl=${encodeURIComponent(`/interns/internship/${internshipId}`)}`);
+    }
   };
 
   const handleBookmark = (internshipId: string) => {
-    // Navigate to registration with returnUrl pointing to the internship detail page
-    navigate(`/register/student?returnUrl=${encodeURIComponent(`/interns/internship/${internshipId}`)}`);
+    // If user is already logged in, they can bookmark directly (or handle differently)
+    if (isAuthenticated && role === 'intern') {
+      // Navigate to the internship details page directly
+      navigate(`/interns/internship/${internshipId}`);
+    } else {
+      // Navigate to registration with returnUrl pointing to the internship detail page
+      navigate(`/register/student?returnUrl=${encodeURIComponent(`/interns/internship/${internshipId}`)}`);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -221,14 +240,24 @@ const PublicInternshipPage = () => {
                 onClick={() => handleLoginToViewDetails(internship.id)}
                 className="w-full bg-gradient-to-r from-[#1F7368] to-[#004F4D] hover:from-[#004F4D] hover:to-[#1F7368] text-white shadow-lg shadow-[#1F7368]/30 hover:shadow-xl hover:shadow-[#004F4D]/40 transition-all duration-300 font-semibold"
               >
-                <Lock size={16} className="mr-2" />
-                Login to View Details & Apply
+                {isAuthenticated ? (
+                  <>
+                    <ExternalLink size={16} className="mr-2" />
+                    View Full Details & Apply
+                  </>
+                ) : (
+                  <>
+                    <Lock size={16} className="mr-2" />
+                    Login to View Details & Apply
+                  </>
+                )}
               </Button>
             </CardContent>
           </Card>
         </motion.div>
 
-        {/* Call to Action Section */}
+        {/* Call to Action Section - Only show if not authenticated */}
+        {!isAuthenticated && (
         <div className="mt-12 max-w-2xl mx-auto">
           <div className="bg-gradient-to-r from-[#1F7368] to-[#63D7C7] p-8 rounded-xl text-white text-center">
             <h3 className="text-2xl font-bold mb-4">Interested in this internship?</h3>
@@ -257,6 +286,7 @@ const PublicInternshipPage = () => {
             </div>
           </div>
         </div>
+        )}
 
         {/* Browse More Section */}
         <div className="text-center mt-12">
