@@ -40,15 +40,19 @@ services:
       
       # Email/SMTP configuration (required for password reset and email verification)
       - key: SMTP_SERVER
-        value: smtp.gmail.com
+        value: smtp-relay.brevo.com
       - key: SMTP_PORT
         value: 587
       - key: SMTP_USERNAME
-        sync: false  # Set in Render dashboard - your Gmail address
+        value: 9923fa001@smtp-brevo.com
       - key: SMTP_PASSWORD
-        sync: false  # Set in Render dashboard - Gmail App Password (not regular password)
+        value: vVbFJS9HjhTztr0x
       - key: FROM_EMAIL
-        sync: false  # Set in Render dashboard - sender email address
+        value: noreply@i-intern.com
+      - key: CONTACT_EMAIL
+        value: contact@i-intern.com
+      - key: ADMIN_EMAIL
+        value: i.intern.technologies@gmail.com
       
       # Google OAuth (optional - currently disabled in code)
       # Uncomment and configure if you want to enable Google login
