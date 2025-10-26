@@ -6,6 +6,7 @@ import EditProfilePage from './pages/EditProfilePage';
 import InternshipDetailPage from './pages/InternshipDetailPage';
 import InternshipsPage from './pages/InternshipsPage';
 import { ApplicationsPage } from './pages/ApplicationsPage';
+import { NotificationsPage } from './pages/NotificationsPage';
 import SettingsPage from './pages/SettingsPage';
 import Index from './pages/Index';
 import NotFound from './pages/NotFound';
@@ -24,6 +25,7 @@ const InternsDashboard: React.FC = () => {
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="internships" element={<InternshipsPage />} />
         <Route path="applications" element={<ApplicationsPage />} />
+        <Route path="notifications" element={<NotificationsPage />} />
         <Route path="build-resume" element={<BuildResumePage />} />
         <Route path="profile" element={<EditProfilePage />} />
         <Route path="settings" element={<SettingsPage />} />

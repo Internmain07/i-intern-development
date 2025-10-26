@@ -8,6 +8,7 @@ Optimized Models - Clean Architecture
 - WorkExperience: Work history
 - Project: Student projects
 - Notification: User notifications
+- InternshipHistory: Student internship experience tracking
 """
 from app.models.user import User
 from app.models.company import EmployerProfile
@@ -15,6 +16,7 @@ from app.models.profile import StudentProfile, WorkExperience, Project
 from app.models.internship import Internship
 from app.models.application import Application
 from app.models.notification import Notification
+from app.models.internship_history import InternshipHistory
 
 __all__ = [
     "User",
@@ -24,5 +26,6 @@ __all__ = [
     "Application", 
     "WorkExperience", 
     "Project",
-    "Notification"
+    "Notification",
+    "InternshipHistory"
 ]

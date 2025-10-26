@@ -22,6 +22,13 @@ def get_notifications(
     """
     Get notifications for the current user
     """
+    print("=" * 80)
+    print(f"🔔 GET /notifications endpoint called")
+    print(f"   User ID: {current_user.id}")
+    print(f"   Email: {current_user.email}")
+    print(f"   Role: {current_user.role}")
+    print(f"   Skip: {skip}, Limit: {limit}, Unread Only: {unread_only}")
+    
     query = db.query(NotificationModel).filter(
         NotificationModel.user_id == current_user.id
     )
@@ -32,6 +39,11 @@ def get_notifications(
     notifications = query.order_by(
         NotificationModel.created_at.desc()
     ).offset(skip).limit(limit).all()
+    
+    print(f"   Found {len(notifications)} notifications for user_id={current_user.id}")
+    for notif in notifications[:5]:  # Print first 5
+        print(f"      • ID={notif.id}, type={notif.type}, recipient_type={notif.recipient_type}, title={notif.title}, is_read={notif.is_read}")
+    print("=" * 80)
     
     return notifications
 
@@ -44,10 +56,19 @@ def get_unread_count(
     """
     Get count of unread notifications for the current user
     """
+    print("=" * 80)
+    print(f"🔔 GET /notifications/unread-count endpoint called")
+    print(f"   User ID: {current_user.id}")
+    print(f"   Email: {current_user.email}")
+    print(f"   Role: {current_user.role}")
+    
     count = db.query(NotificationModel).filter(
         NotificationModel.user_id == current_user.id,
         NotificationModel.is_read == False
     ).count()
+    
+    print(f"   Unread count for user_id={current_user.id}: {count}")
+    print("=" * 80)
     
     return {"unread_count": count}
 

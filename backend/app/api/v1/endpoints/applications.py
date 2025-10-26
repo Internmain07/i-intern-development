@@ -65,9 +65,38 @@ def apply_for_internship(
     db.add(db_application)
     db.commit()
     db.refresh(db_application)
+    
     # Get the related internship and company
     internship = db.query(InternshipModel).filter(InternshipModel.id == db_application.internship_id).first()
     company_id = str(internship.employer_profile_id) if internship and internship.employer_profile_id else "0"
+    
+    # Create notification for the company
+    if internship and internship.employer_profile_id:
+        try:
+            from app.api.v1.endpoints.notifications import create_notification
+            # Get the company user
+            company = db.query(Company).filter(Company.id == internship.employer_profile_id).first()
+            if company:
+                print(f"DEBUG: Creating notification for company user_id={company.user_id}")
+                student_name = current_user.full_name or current_user.email.split('@')[0]
+                notification = create_notification(
+                    db=db,
+                    user_id=company.user_id,  # Company's user ID
+                    notification_type='application_received',
+                    title='New Application Received',
+                    message=f'{student_name} has applied for your internship "{internship.title}"',
+                    recipient_type='company',
+                    related_id=db_application.id,
+                    related_type='application'
+                )
+                print(f"DEBUG: Notification created successfully: ID={notification.id}")
+            else:
+                print(f"DEBUG: Company not found for employer_profile_id={internship.employer_profile_id}")
+        except Exception as e:
+            print(f"ERROR: Failed to create notification: {e}")
+            import traceback
+            traceback.print_exc()
+    
     from app.schemas.application import Application
     return Application(
         id=db_application.id,
@@ -330,6 +359,52 @@ def get_all_company_applicants(
             # Get student profile data
             student_profile = student.student_profile if getattr(student, 'student_profile', None) else None
             
+            # NEW: Get student's internship experience summary
+            from app.models.internship_history import InternshipHistory
+            active_internship = db.query(InternshipHistory).filter(
+                InternshipHistory.student_id == student.id,
+                InternshipHistory.is_currently_active == True,
+                InternshipHistory.status == "ongoing"
+            ).first()
+            
+            completed_internships_count = db.query(func.count(InternshipHistory.id)).filter(
+                InternshipHistory.student_id == student.id,
+                InternshipHistory.status == "completed"
+            ).scalar()
+            
+            # Calculate total experience days by summing up each completed internship
+            completed_internships = db.query(InternshipHistory).filter(
+                InternshipHistory.student_id == student.id,
+                InternshipHistory.status == "completed"
+            ).all()
+            
+            total_experience_days = 0
+            for internship_record in completed_internships:
+                end_date = internship_record.actual_end_date or internship_record.expected_end_date
+                if end_date and internship_record.start_date:
+                    days = (end_date - internship_record.start_date).days
+                    total_experience_days += days
+            
+            experience_badge = None
+            if active_internship:
+                experience_badge = {
+                    "status": "HIRED",
+                    "type": "active",
+                    "title": active_internship.internship_title,
+                    "company": active_internship.company_name,
+                    "days_remaining": active_internship.days_remaining,
+                    "start_date": active_internship.start_date.isoformat(),
+                    "expected_end_date": active_internship.expected_end_date.isoformat()
+                }
+            elif completed_internships_count > 0:
+                experience_badge = {
+                    "status": "EXPERIENCED",
+                    "type": "completed",
+                    "completed_count": completed_internships_count,
+                    "total_experience_months": round(total_experience_days / 30, 1),
+                    "total_experience_days": int(total_experience_days)
+                }
+            
             # Get work experiences and projects directly from database
             from app.models.profile import WorkExperience, Project as ProjectModel
             
@@ -393,6 +468,7 @@ def get_all_company_applicants(
                     "skills": _normalize_skills(student_profile.skills if student_profile and student_profile.skills else None),
                 "work_experiences": work_experiences,
                 "projects": projects,
+                "experience_badge": experience_badge,  # NEW: Badge showing internship status
                 "match_percentage": match_details['match_percentage'],
                 "match_score": f"{match_details['match_percentage']:.0f}%",
                 "skill_match": match_details['skill_match_percentage'],
@@ -483,6 +559,9 @@ def update_application_status(
             employer_profile = internship.employer_profile if internship and hasattr(internship, 'employer_profile') else None
             company_name = employer_profile.company_name if employer_profile and hasattr(employer_profile, 'company_name') else getattr(current_company, 'name', 'I-Intern')
 
+            # NOTE: In-app notifications for students are disabled
+            # Students will only receive email notifications
+            
             if student and getattr(student, 'email', None):
                 from app.core.config import settings
                 frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:8081')
@@ -550,6 +629,52 @@ def get_applicant_details(
     # Determine if contact details should be visible
     can_view_contact = application.status.lower() in ['offer accepted', 'offer_accepted', 'accepted', 'hired']
     
+    # NEW: Get student's internship experience
+    from app.models.internship_history import InternshipHistory
+    active_internship = db.query(InternshipHistory).filter(
+        InternshipHistory.student_id == student.id,
+        InternshipHistory.is_currently_active == True,
+        InternshipHistory.status == "ongoing"
+    ).first()
+    
+    completed_internships_count = db.query(func.count(InternshipHistory.id)).filter(
+        InternshipHistory.student_id == student.id,
+        InternshipHistory.status == "completed"
+    ).scalar()
+    
+    # Calculate total experience days by summing up each completed internship
+    completed_internships = db.query(InternshipHistory).filter(
+        InternshipHistory.student_id == student.id,
+        InternshipHistory.status == "completed"
+    ).all()
+    
+    total_experience_days = 0
+    for internship_record in completed_internships:
+        end_date = internship_record.actual_end_date or internship_record.expected_end_date
+        if end_date and internship_record.start_date:
+            days = (end_date - internship_record.start_date).days
+            total_experience_days += days
+    
+    experience_badge = None
+    if active_internship:
+        experience_badge = {
+            "status": "HIRED",
+            "type": "active",
+            "title": active_internship.internship_title,
+            "company": active_internship.company_name,
+            "days_remaining": active_internship.days_remaining,
+            "start_date": active_internship.start_date.isoformat(),
+            "expected_end_date": active_internship.expected_end_date.isoformat()
+        }
+    elif completed_internships_count > 0:
+        experience_badge = {
+            "status": "EXPERIENCED",
+            "type": "completed",
+            "completed_count": completed_internships_count,
+            "total_experience_months": round(total_experience_days / 30, 1),
+            "total_experience_days": int(total_experience_days)
+        }
+    
     # Get work experiences directly from the database
     from app.models.profile import WorkExperience, Project as ProjectModel
     
@@ -615,6 +740,7 @@ def get_applicant_details(
         "skills": student_profile.skills if student_profile and student_profile.skills else [],
         "work_experiences": work_experiences,
         "projects": projects,
+        "experience_badge": experience_badge,  # NEW: Badge showing internship status
         "match_percentage": match_details['match_percentage'],
         "match_score": f"{match_details['match_percentage']:.0f}%",
         "skill_match": match_details['skill_match_percentage'],
@@ -650,6 +776,21 @@ def respond_to_offer(
     if application.status.lower() not in ['offered', 'accepted', 'declined']:
         raise HTTPException(status_code=400, detail="This application does not have an active offer")
     
+    # NEW: Check if student can accept (no active internship)
+    if response.lower() == "accepted":
+        from app.models.internship_history import InternshipHistory
+        active_internship = db.query(InternshipHistory).filter(
+            InternshipHistory.student_id == current_user.id,
+            InternshipHistory.is_currently_active == True,
+            InternshipHistory.status == "ongoing"
+        ).first()
+        
+        if active_internship:
+            raise HTTPException(
+                status_code=400,
+                detail=f"You cannot accept this offer because you currently have an active internship: {active_internship.internship_title} at {active_internship.company_name}. Please complete your current internship first."
+            )
+    
     # Update status based on response
     if response.lower() == "accepted":
         application.status = "Accepted"
@@ -663,6 +804,40 @@ def respond_to_offer(
     
     db.commit()
     db.refresh(application)
+    
+    # NOTE: Notifications for companies are kept active
+    # Create notification for the company
+    try:
+        internship = db.query(InternshipModel).filter(InternshipModel.id == application.internship_id).first()
+        if internship and internship.employer_profile_id:
+            from app.api.v1.endpoints.notifications import create_notification
+            company = db.query(Company).filter(Company.id == internship.employer_profile_id).first()
+            if company:
+                student_name = current_user.full_name or current_user.email.split('@')[0]
+                if response.lower() == "accepted":
+                    create_notification(
+                        db=db,
+                        user_id=company.user_id,
+                        notification_type='offer_response',
+                        title='Offer Accepted!',
+                        message=f'{student_name} has accepted your offer for "{internship.title}"',
+                        recipient_type='company',
+                        related_id=application.id,
+                        related_type='application'
+                    )
+                else:
+                    create_notification(
+                        db=db,
+                        user_id=company.user_id,
+                        notification_type='offer_response',
+                        title='Offer Declined',
+                        message=f'{student_name} has declined your offer for "{internship.title}"',
+                        recipient_type='company',
+                        related_id=application.id,
+                        related_type='application'
+                    )
+    except Exception as e:
+        print(f"Failed to create notification for company: {e}")
     
     # Return full offer details with internship information
     internship = db.query(InternshipModel).filter(InternshipModel.id == application.internship_id).first()

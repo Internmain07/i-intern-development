@@ -9,6 +9,7 @@ import { Applicants } from './pages/Applicants';
 import { Settings } from './pages/Settings';
 import PostInternshipPage from './pages/PostInternshipPage';
 import { EditInternshipPage } from './pages/EditInternshipPage';
+import { NotificationsPage } from './pages/NotificationsPage';
 import { CompanyAuthGuard } from './components/CompanyAuthGuard';
 import NotFound from './pages/NotFound';
 import ChatWidget from '@/apps/iva/components/ChatWidget';
@@ -25,6 +26,7 @@ const CompanyDashboard: React.FC = () => {
           <Route path="internships" element={<Internships />} />
           <Route path="internships/edit/:id" element={<EditInternshipPage />} />
           <Route path="applicants" element={<Applicants />} />
+          <Route path="notifications" element={<NotificationsPage />} />
           <Route path="settings" element={<Settings />} />
           <Route path="post-internship" element={<PostInternshipPage />} />
           <Route path="*" element={<NotFound />} />

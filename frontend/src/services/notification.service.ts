@@ -22,18 +22,32 @@ export const notificationService = {
    * Get all notifications for the current user
    */
   async getNotifications(skip: number = 0, limit: number = 50, unreadOnly: boolean = false): Promise<Notification[]> {
-    const response = await apiClient.get(
-      `/api/v1/notifications?skip=${skip}&limit=${limit}&unread_only=${unreadOnly}`
-    );
-    return response;
+    console.log('🔔 [NotificationService] Fetching notifications:', { skip, limit, unreadOnly });
+    try {
+      const response = await apiClient.get(
+        `/api/v1/notifications?skip=${skip}&limit=${limit}&unread_only=${unreadOnly}`
+      );
+      console.log('✅ [NotificationService] Received notifications:', response);
+      return response;
+    } catch (error) {
+      console.error('❌ [NotificationService] Error fetching notifications:', error);
+      throw error;
+    }
   },
 
   /**
    * Get count of unread notifications
    */
   async getUnreadCount(): Promise<number> {
-    const response: NotificationResponse = await apiClient.get('/api/v1/notifications/unread-count');
-    return response.unread_count;
+    console.log('🔔 [NotificationService] Fetching unread count');
+    try {
+      const response: NotificationResponse = await apiClient.get('/api/v1/notifications/unread-count');
+      console.log('✅ [NotificationService] Unread count:', response.unread_count);
+      return response.unread_count;
+    } catch (error) {
+      console.error('❌ [NotificationService] Error fetching unread count:', error);
+      throw error;
+    }
   },
 
   /**

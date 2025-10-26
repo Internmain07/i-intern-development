@@ -1,7 +1,7 @@
 """
 Application Model - Links Students to Internships
 """
-from sqlalchemy import Column, Integer, String, ForeignKey, Enum as SAEnum, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, Enum as SAEnum, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from datetime import datetime
@@ -32,6 +32,9 @@ class Application(Base):
     offer_sent_date = Column(DateTime(timezone=True), nullable=True)  # When offer letter was sent
     offer_response_date = Column(DateTime(timezone=True), nullable=True)  # When candidate responded
     hired_date = Column(DateTime(timezone=True), nullable=True)  # When candidate was officially hired
+    
+    # Note: Internship execution tracking (start_date, end_date, etc.) is now handled 
+    # by the InternshipHistory model in a separate table
     
     # Relationships
     student = relationship("User", back_populates="applications")  # Link to User (student)
