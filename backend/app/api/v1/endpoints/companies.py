@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from typing import Optional
 from pydantic import BaseModel, EmailStr
 from app.api import deps
-from app.models.company import Company
+from app.models.company import EmployerProfile
 from app.core.security import get_password_hash
 import uuid
 from pathlib import Path
@@ -15,12 +15,11 @@ router = APIRouter()
 
 class CompanyProfileResponse(BaseModel):
     id: int
-    email: Optional[str] = None
     company_name: Optional[str] = None
     contact_person: Optional[str] = None
     contact_number: Optional[str] = None
-    company_website: Optional[str] = None
-    industry_type: Optional[str] = None
+    website: Optional[str] = None
+    industry: Optional[str] = None
     address: Optional[str] = None
     country: Optional[str] = None
     state: Optional[str] = None
@@ -28,7 +27,6 @@ class CompanyProfileResponse(BaseModel):
     pincode: Optional[str] = None
     logo_url: Optional[str] = None
     is_verified: bool = False
-    is_active: bool = True
 
     class Config:
         from_attributes = True
@@ -38,8 +36,8 @@ class CompanyProfileUpdate(BaseModel):
     company_name: Optional[str] = None
     contact_person: Optional[str] = None
     contact_number: Optional[str] = None
-    company_website: Optional[str] = None
-    industry_type: Optional[str] = None
+    website: Optional[str] = None
+    industry: Optional[str] = None
     address: Optional[str] = None
     country: Optional[str] = None
     state: Optional[str] = None
@@ -55,7 +53,7 @@ class PasswordUpdate(BaseModel):
 @router.get("/profile", response_model=CompanyProfileResponse)
 def get_company_profile(
     db: Session = Depends(deps.get_db),
-    current_company: Company = Depends(deps.get_current_active_company),
+    current_company: EmployerProfile = Depends(deps.get_current_active_company),
 ):
     """Get the current company's profile"""
     return current_company
@@ -65,7 +63,7 @@ def get_company_profile(
 def update_company_profile(
     profile_update: CompanyProfileUpdate,
     db: Session = Depends(deps.get_db),
-    current_company: Company = Depends(deps.get_current_active_company),
+    current_company: EmployerProfile = Depends(deps.get_current_active_company),
 ):
     """Update company profile information"""
     
@@ -74,9 +72,9 @@ def update_company_profile(
     
     # Check for contact number uniqueness if it's being updated
     if 'contact_number' in update_data and update_data['contact_number']:
-        existing_company = db.query(Company).filter(
-            Company.contact_number == update_data['contact_number'],
-            Company.id != current_company.id
+        existing_company = db.query(EmployerProfile).filter(
+            EmployerProfile.contact_number == update_data['contact_number'],
+            EmployerProfile.id != current_company.id
         ).first()
         if existing_company:
             raise HTTPException(
@@ -111,7 +109,7 @@ def update_company_profile(
 def partial_update_company_profile(
     profile_update: CompanyProfileUpdate,
     db: Session = Depends(deps.get_db),
-    current_company: Company = Depends(deps.get_current_active_company),
+    current_company: EmployerProfile = Depends(deps.get_current_active_company),
 ):
     """Partially update company profile (only provided fields)"""
     
@@ -120,9 +118,9 @@ def partial_update_company_profile(
     
     # Check for contact number uniqueness if it's being updated
     if 'contact_number' in update_data and update_data['contact_number']:
-        existing_company = db.query(Company).filter(
-            Company.contact_number == update_data['contact_number'],
-            Company.id != current_company.id
+        existing_company = db.query(EmployerProfile).filter(
+            EmployerProfile.contact_number == update_data['contact_number'],
+            EmployerProfile.id != current_company.id
         ).first()
         if existing_company:
             raise HTTPException(
@@ -157,7 +155,7 @@ def partial_update_company_profile(
 def update_password(
     password_update: PasswordUpdate,
     db: Session = Depends(deps.get_db),
-    current_company: Company = Depends(deps.get_current_active_company),
+    current_company: EmployerProfile = Depends(deps.get_current_active_company),
 ):
     """Update company password"""
     from app.core.security import verify_password
@@ -186,7 +184,7 @@ MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 async def upload_logo(
     file: UploadFile = File(...),
     db: Session = Depends(deps.get_db),
-    current_company: Company = Depends(deps.get_current_active_company),
+    current_company: EmployerProfile = Depends(deps.get_current_active_company),
 ):
     """Upload company logo"""
     print(f"DEBUG: Uploading logo for company {current_company.user.email}")  # type: ignore
@@ -239,7 +237,7 @@ async def upload_logo(
 @router.delete("/logo")
 def delete_logo(
     db: Session = Depends(deps.get_db),
-    current_company: Company = Depends(deps.get_current_active_company),
+    current_company: EmployerProfile = Depends(deps.get_current_active_company),
 ):
     """Delete company logo"""
     if not current_company.logo_url:  # type: ignore
@@ -268,7 +266,7 @@ def delete_logo(
 @router.get("/notifications")
 async def get_notification_preferences(
     db: Session = Depends(deps.get_db),
-    current_company: Company = Depends(deps.get_current_active_company)
+    current_company: EmployerProfile = Depends(deps.get_current_active_company)
 ):
     """Get notification preferences for the current company"""
     preferences = current_company.notification_preferences or {
@@ -287,7 +285,7 @@ async def get_notification_preferences(
 async def update_notification_preferences(
     preferences: dict,
     db: Session = Depends(deps.get_db),
-    current_company: Company = Depends(deps.get_current_active_company)
+    current_company: EmployerProfile = Depends(deps.get_current_active_company)
 ):
     """Update notification preferences for the current company"""
     try:

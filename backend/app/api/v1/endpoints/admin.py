@@ -5,7 +5,8 @@ from typing import List, Dict, Any
 from datetime import datetime, timedelta
 from app.api.deps import get_current_user, get_db
 from app.models.user import User
-from app.models.company import Company
+from app.models.company import EmployerProfile
+from app.models.profile import StudentProfile
 from app.models.internship import Internship
 from app.models.application import Application
 
@@ -30,8 +31,8 @@ async def get_dashboard_stats(
     """Get statistics for admin dashboard"""
     
     # Get total counts
-    total_users = db.query(User).filter(User.role == "intern").count()
-    total_companies = db.query(Company).count()
+    total_users = db.query(User).filter(or_(User.role == "intern", User.role == "student")).count()
+    total_companies = db.query(EmployerProfile).count()
     total_internships = db.query(Internship).count()
     total_applications = db.query(Application).count()
     
@@ -44,8 +45,8 @@ async def get_dashboard_stats(
     ).count()
     
     # Get verified companies
-    verified_companies = db.query(Company).filter(
-        Company.is_verified == True
+    verified_companies = db.query(EmployerProfile).filter(
+        EmployerProfile.is_verified == True
     ).count()
     
     # Calculate growth trends (simplified - you can enhance this)
@@ -87,18 +88,26 @@ async def get_recent_activities(
     ).limit(limit).all()
     
     for app in recent_applications:
-        intern = db.query(User).filter(User.id == app.intern_id).first()
+        student = db.query(User).filter(User.id == app.student_id).first()
         internship = db.query(Internship).filter(Internship.id == app.internship_id).first()
-        company = db.query(Company).filter(Company.id == app.company_id).first()
         
-        if intern and internship and company:
+        if student and internship:
+            # Get company info from internship's employer profile
+            employer_profile = db.query(EmployerProfile).filter(
+                EmployerProfile.id == internship.employer_profile_id
+            ).first()
+            company_name = employer_profile.company_name if employer_profile else "Unknown Company"
+            
+            # Get student name from full_name or email
+            student_name = student.full_name or student.email
+            
             activities.append({
                 "id": app.id,
-                "activity": f"{intern.name or intern.email} applied to {internship.title}",
+                "activity": f"{student_name} applied to {internship.title}",
                 "timestamp": app.application_date.isoformat() if app.application_date else datetime.utcnow().isoformat(),
                 "type": "application",
-                "user_name": intern.name or intern.email,
-                "company_name": company.company_name or company.email,
+                "user_name": student_name,
+                "company_name": company_name,
                 "internship_title": internship.title
             })
     
@@ -118,19 +127,21 @@ async def get_audit_logs(
     audit_logs = []
     
     # Get recent company verifications
-    recent_companies = db.query(Company).filter(
-        Company.is_verified == True
-    ).order_by(desc(Company.id)).limit(limit // 2).all()
+    recent_companies = db.query(EmployerProfile).filter(
+        EmployerProfile.is_verified == True
+    ).order_by(desc(EmployerProfile.id)).limit(limit // 2).all()
     
     for company in recent_companies:
+        # Get email from related user
+        company_email = company.user.email if company.user else "N/A"
         audit_logs.append({
             "id": f"audit_{company.id}_verified",
             "admin_user": "Admin",
             "action": "COMPANY_VERIFIED",
-            "targetName": company.company_name or company.email,
+            "targetName": company.company_name or company_email,
             "targetType": "Company",
             "timestamp": datetime.utcnow().isoformat(),
-            "details": f"Verified company: {company.company_name or company.email}"
+            "details": f"Verified company: {company.company_name or company_email}"
         })
     
     # Get recent internship approvals
@@ -162,14 +173,16 @@ async def get_all_users(
 ):
     """Get all intern users with filtering"""
     
-    query = db.query(User).filter(User.role == "intern")
+    # Query users with role 'student' or 'intern' (both are student roles)
+    query = db.query(User).filter(or_(User.role == "intern", User.role == "student"))
     
     if search:
-        query = query.filter(
+        # Join with StudentProfile for searching student-specific fields
+        query = query.outerjoin(StudentProfile).filter(
             or_(
-                User.name.ilike(f"%{search}%"),
+                User.full_name.ilike(f"%{search}%"),
                 User.email.ilike(f"%{search}%"),
-                User.university.ilike(f"%{search}%")
+                StudentProfile.university.ilike(f"%{search}%")
             )
         )
     
@@ -179,8 +192,12 @@ async def get_all_users(
     # Get application counts for each user
     user_data = []
     for user in users:
+        # Get student profile if exists
+        student_profile = user.student_profile
+        
+        # Get application counts for each user
         application_count = db.query(Application).filter(
-            Application.intern_id == user.id
+            Application.student_id == user.id
         ).count()
         
         # Determine user status
@@ -189,18 +206,30 @@ async def get_all_users(
         else:
             user_status = "Active"
         
+        # Parse skills - StudentProfile.skills is JSON array
+        skills = []
+        if student_profile and student_profile.skills:
+            if isinstance(student_profile.skills, list):
+                skills = student_profile.skills
+            elif isinstance(student_profile.skills, str):
+                try:
+                    import json
+                    skills = json.loads(student_profile.skills)
+                except:
+                    skills = [s.strip() for s in student_profile.skills.split(",") if s.strip()]
+        
         user_data.append({
             "id": user.id,
-            "name": user.name or "N/A",
+            "name": user.full_name or "N/A",
             "email": user.email,
-            "university": user.university or "N/A",
-            "course": user.major or "N/A",
-            "year": user.graduation_year or "N/A",
-            "skills": user.skills.split(",") if user.skills else [],
+            "university": student_profile.university if student_profile else "N/A",
+            "course": student_profile.major if student_profile else "N/A",
+            "year": student_profile.graduation_year if student_profile else "N/A",
+            "skills": skills,
             "status": user_status,
             "is_suspended": user.is_suspended,
-            "dateJoined": datetime.utcnow().isoformat(),  # You can add a created_at field to User model
-            "gpa": user.grading_score or "N/A",
+            "dateJoined": user.created_at.isoformat() if user.created_at else datetime.utcnow().isoformat(),
+            "gpa": student_profile.grading_score if student_profile else "N/A",
             "profileCompletion": 85,  # Calculate based on filled fields
             "applications": application_count,
             "avatar": user.avatar_url or ""
@@ -223,24 +252,24 @@ async def get_all_companies(
 ):
     """Get all companies with filtering"""
     
-    query = db.query(Company)
+    query = db.query(EmployerProfile)
     
     if search:
         query = query.filter(
             or_(
-                Company.company_name.ilike(f"%{search}%"),
-                Company.email.ilike(f"%{search}%"),
-                Company.industry_type.ilike(f"%{search}%")
+                EmployerProfile.company_name.ilike(f"%{search}%"),
+                EmployerProfile.industry.ilike(f"%{search}%")
             )
         )
     
     if status_filter and status_filter != "all":
         if status_filter == "verified":
-            query = query.filter(Company.is_verified == True)
+            query = query.filter(EmployerProfile.is_verified == True)
         elif status_filter == "pending":
-            query = query.filter(Company.is_verified == False)
+            query = query.filter(EmployerProfile.is_verified == False)
         elif status_filter == "suspended":
-            query = query.filter(Company.is_active == False)
+            # For suspended, check the related user's is_suspended field
+            query = query.join(User).filter(User.is_suspended == True)
     
     total = query.count()
     companies = query.offset(skip).limit(limit).all()
@@ -250,13 +279,13 @@ async def get_all_companies(
     for company in companies:
         active_postings = db.query(Internship).filter(
             and_(
-                Internship.company_id == company.id,
+                Internship.employer_profile_id == company.id,
                 Internship.status == "active"
             )
         ).count()
         
-        # Determine status
-        if not company.is_active:
+        # Determine status based on user suspension and verification
+        if company.user and company.user.is_suspended:
             status = "suspended"
         elif company.is_verified:
             status = "verified"
@@ -266,13 +295,13 @@ async def get_all_companies(
         company_data.append({
             "id": company.id,
             "name": company.company_name or "N/A",
-            "email": company.email,
-            "industry": company.industry_type or "N/A",
-            "size": "50-100",  # Add this field to Company model if needed
+            "email": company.user.email if company.user else "N/A",
+            "industry": company.industry or "N/A",
+            "size": "50-100",  # Add this field to EmployerProfile model if needed
             "location": f"{company.city or ''}, {company.state or ''}".strip(", "),
-            "website": company.company_website or "",
+            "website": company.website or "",
             "status": status,
-            "dateJoined": datetime.utcnow().isoformat(),
+            "dateJoined": company.created_at.isoformat() if company.created_at else datetime.utcnow().isoformat(),
             "activePostings": active_postings,
             "contactPerson": company.contact_person or "N/A",
             "phone": company.contact_number or "N/A"
@@ -319,7 +348,9 @@ async def get_all_internships(
     # Get company names and application counts
     internship_data = []
     for internship in internships:
-        company = db.query(Company).filter(Company.id == internship.company_id).first()
+        employer_profile = db.query(EmployerProfile).filter(
+            EmployerProfile.id == internship.employer_profile_id
+        ).first()
         
         application_count = db.query(Application).filter(
             Application.internship_id == internship.id
@@ -334,7 +365,7 @@ async def get_all_internships(
         internship_data.append({
             "id": internship.id,
             "title": internship.title,
-            "company": company.company_name if company else "Unknown",
+            "company": employer_profile.company_name if employer_profile else "Unknown",
             "location": internship.location or "Remote",
             "stipend": internship.stipend or 0,
             "applications": application_count,
@@ -414,13 +445,13 @@ async def get_weekly_activity(
 
 @router.patch("/companies/{company_id}/verify")
 async def verify_company(
-    company_id: str,
+    company_id: int,
     db: Session = Depends(get_db),
     current_admin: User = Depends(get_current_admin_user)
 ):
     """Verify a company"""
     
-    company = db.query(Company).filter(Company.id == company_id).first()
+    company = db.query(EmployerProfile).filter(EmployerProfile.id == company_id).first()
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
     
@@ -433,28 +464,28 @@ async def verify_company(
 
 @router.patch("/companies/{company_id}/suspend")
 async def suspend_company(
-    company_id: str,
+    company_id: int,
     db: Session = Depends(get_db),
     current_admin: User = Depends(get_current_admin_user)
 ):
-    """Suspend a company - affects company table, user table, and all internships"""
+    """Suspend a company - affects employer_profiles table, user table, and all internships"""
     
-    company = db.query(Company).filter(Company.id == company_id).first()
+    company = db.query(EmployerProfile).filter(EmployerProfile.id == company_id).first()
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
     
     try:
-        # Suspend in company table
-        company.is_active = False
+        # Suspend in employer_profiles table - not needed, use User table instead
+        # company.is_active = False
         
         # Suspend in users table
-        user = db.query(User).filter(User.email == company.email).first()
+        user = company.user if hasattr(company, 'user') else None
         if user:
             user.is_suspended = True
         
         # Suspend all internships
         suspended_internships = db.query(Internship).filter(
-            Internship.company_id == company_id
+            Internship.employer_profile_id == company_id
         ).update({"is_suspended": True}, synchronize_session=False)
         
         db.commit()
@@ -479,28 +510,28 @@ async def suspend_company(
 
 @router.patch("/companies/{company_id}/unsuspend")
 async def unsuspend_company(
-    company_id: str,
+    company_id: int,
     db: Session = Depends(get_db),
     current_admin: User = Depends(get_current_admin_user)
 ):
-    """Unsuspend a company - restores company table, user table, and all internships"""
+    """Unsuspend a company - restores employer_profiles table, user table, and all internships"""
     
-    company = db.query(Company).filter(Company.id == company_id).first()
+    company = db.query(EmployerProfile).filter(EmployerProfile.id == company_id).first()
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
     
     try:
-        # Unsuspend in company table
-        company.is_active = True
+        # Unsuspend in employer_profiles table - not needed, use User table instead
+        # company.is_active = True
         
         # Unsuspend in users table
-        user = db.query(User).filter(User.email == company.email).first()
+        user = company.user if hasattr(company, 'user') else None
         if user:
             user.is_suspended = False
         
         # Unsuspend all internships
         unsuspended_internships = db.query(Internship).filter(
-            Internship.company_id == company_id
+            Internship.employer_profile_id == company_id
         ).update({"is_suspended": False}, synchronize_session=False)
         
         db.commit()
@@ -525,43 +556,41 @@ async def unsuspend_company(
 
 @router.delete("/companies/{company_id}")
 async def delete_company(
-    company_id: str,
+    company_id: int,
     db: Session = Depends(get_db),
     current_admin: User = Depends(get_current_admin_user)
 ):
     """Delete a company and all associated data with full cascade"""
     
-    company = db.query(Company).filter(Company.id == company_id).first()
+    company = db.query(EmployerProfile).filter(EmployerProfile.id == company_id).first()
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
     
     try:
         # Get all internships for this company
-        internships = db.query(Internship).filter(Internship.company_id == company_id).all()
+        internships = db.query(Internship).filter(
+            Internship.employer_profile_id == company_id
+        ).all()
         internship_ids = [i.id for i in internships]
         
         # Delete all applications for these internships
-        deleted_apps = db.query(Application).filter(
-            Application.company_id == company_id
-        ).delete(synchronize_session=False)
-        
-        # Also delete applications by internship_id
+        deleted_apps = 0
         if internship_ids:
-            db.query(Application).filter(
+            deleted_apps = db.query(Application).filter(
                 Application.internship_id.in_(internship_ids)
             ).delete(synchronize_session=False)
         
         # Delete all internships
         deleted_internships = db.query(Internship).filter(
-            Internship.company_id == company_id
+            Internship.employer_profile_id == company_id
         ).delete(synchronize_session=False)
         
         # Delete the user account associated with this company
-        user = db.query(User).filter(User.email == company.email).first()
+        user = company.user if hasattr(company, 'user') else None
         if user:
             db.delete(user)
         
-        # Delete company record
+        # Delete company profile record
         db.delete(company)
         db.commit()
         
@@ -599,40 +628,52 @@ async def delete_user(
         raise HTTPException(status_code=400, detail="Cannot delete admin users")
     
     try:
-        # If intern, delete all related data
-        if user.role == "intern":
-            # Delete all applications
-            deleted_apps = db.query(Application).filter(Application.intern_id == user_id).delete(synchronize_session=False)
+        # If intern/student, delete all related data
+        if user.role in ["intern", "student"]:
+            # Delete all applications - Fixed: use student_id instead of intern_id
+            deleted_apps = db.query(Application).filter(
+                Application.student_id == user_id
+            ).delete(synchronize_session=False)
             
-            # Delete work experiences (if exists)
+            # Delete work experiences (if WorkExperience model exists)
             try:
-                from app.models.work_experience import WorkExperience
-                db.query(WorkExperience).filter(WorkExperience.user_id == user_id).delete(synchronize_session=False)
-            except:
+                from app.models.profile import WorkExperience
+                db.query(WorkExperience).filter(
+                    WorkExperience.user_id == user_id
+                ).delete(synchronize_session=False)
+            except ImportError:
                 pass
             
-            # Delete projects (if exists)
+            # Delete projects (if Project model exists)
             try:
-                from app.models.project import Project
-                db.query(Project).filter(Project.user_id == user_id).delete(synchronize_session=False)
-            except:
+                from app.models.profile import Project
+                db.query(Project).filter(
+                    Project.user_id == user_id
+                ).delete(synchronize_session=False)
+            except ImportError:
                 pass
         
-        # If company account, handle company-related data
-        elif user.role == "company":
-            # Find the company record
-            company = db.query(Company).filter(Company.email == user.email).first()
-            if company:
+        # If company/employer account, handle company-related data
+        elif user.role in ["company", "employer"]:
+            # Find the employer profile record
+            employer_profile = db.query(EmployerProfile).filter(EmployerProfile.user_id == user_id).first()
+            if employer_profile:
                 # Delete all internships and their applications
-                internships = db.query(Internship).filter(Internship.company_id == company.id).all()
+                internships = db.query(Internship).filter(
+                    Internship.employer_profile_id == employer_profile.id
+                ).all()
                 for internship in internships:
-                    db.query(Application).filter(Application.internship_id == internship.id).delete(synchronize_session=False)
+                    db.query(Application).filter(
+                        Application.internship_id == internship.id
+                    ).delete(synchronize_session=False)
                 
                 # Delete all internships
-                db.query(Internship).filter(Internship.company_id == company.id).delete(synchronize_session=False)
+                db.query(Internship).filter(
+                    Internship.employer_profile_id == employer_profile.id
+                ).delete(synchronize_session=False)
                 
-                # Delete company record
-                db.delete(company)
+                # Delete employer profile record
+                db.delete(employer_profile)
         
         # Finally delete the user from users table
         db.delete(user)
@@ -733,13 +774,17 @@ async def suspend_user(
         # Suspend in users table
         user.is_suspended = True
         
-        # If company user, also suspend the company and all internships
-        if user.role == "company":
-            company = db.query(Company).filter(Company.email == user.email).first()
-            if company:
-                company.is_active = False
+        # If company user, also suspend the employer profile and all internships
+        if user.role in ["company", "employer"]:
+            employer_profile = db.query(EmployerProfile).filter(
+                EmployerProfile.user_id == user_id
+            ).first()
+            if employer_profile:
+                # No is_active field in EmployerProfile - suspension is tracked via User.is_suspended
                 # Suspend all company's internships
-                db.query(Internship).filter(Internship.company_id == company.id).update(
+                db.query(Internship).filter(
+                    Internship.employer_profile_id == employer_profile.id
+                ).update(
                     {"is_suspended": True},
                     synchronize_session=False
                 )
@@ -778,13 +823,17 @@ async def unsuspend_user(
         # Unsuspend in users table
         user.is_suspended = False
         
-        # If company user, also unsuspend the company and all internships
-        if user.role == "company":
-            company = db.query(Company).filter(Company.email == user.email).first()
-            if company:
-                company.is_active = True
+        # If company user, also unsuspend the employer profile and all internships
+        if user.role in ["company", "employer"]:
+            employer_profile = db.query(EmployerProfile).filter(
+                EmployerProfile.user_id == user_id
+            ).first()
+            if employer_profile:
+                # No is_active field in EmployerProfile - suspension is tracked via User.is_suspended
                 # Optionally unsuspend all company's internships
-                db.query(Internship).filter(Internship.company_id == company.id).update(
+                db.query(Internship).filter(
+                    Internship.employer_profile_id == employer_profile.id
+                ).update(
                     {"is_suspended": False},
                     synchronize_session=False
                 )
@@ -885,21 +934,21 @@ async def update_user(
 
 @router.patch("/companies/{company_id}/update")
 async def update_company(
-    company_id: str,
+    company_id: int,
     updates: Dict[str, Any],
     db: Session = Depends(get_db),
     current_admin: User = Depends(get_current_admin_user)
 ):
     """Direct database update for company fields - Admin has full power"""
     
-    company = db.query(Company).filter(Company.id == company_id).first()
+    company = db.query(EmployerProfile).filter(EmployerProfile.id == company_id).first()
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
     
     try:
         # Update allowed fields
         for field, value in updates.items():
-            if hasattr(company, field) and field not in ['id', 'hashed_password']:
+            if hasattr(company, field) and field not in ['id']:
                 setattr(company, field, value)
         
         db.commit()
@@ -969,23 +1018,19 @@ async def cleanup_orphaned_records(
             "orphaned_companies": 0
         }
         
-        # Find and delete applications with non-existent interns
+        # Find and delete applications with non-existent students
         all_user_ids = [u.id for u in db.query(User.id).all()]
         orphaned_apps = db.query(Application).filter(
-            ~Application.intern_id.in_(all_user_ids)
+            ~Application.student_id.in_(all_user_ids)
         ).delete(synchronize_session=False)
         cleanup_report["orphaned_applications"] = orphaned_apps
         
-        # Find and delete internships with non-existent companies
-        all_company_ids = [c.id for c in db.query(Company.id).all()]
+        # Find and delete internships with non-existent employer profiles
+        all_company_ids = [c.id for c in db.query(EmployerProfile.id).all()]
         orphaned_internships = db.query(Internship).filter(
-            ~Internship.company_id.in_(all_company_ids)
+            ~Internship.employer_profile_id.in_(all_company_ids)
         ).delete(synchronize_session=False)
         cleanup_report["orphaned_internships"] = orphaned_internships
-        
-        # Find companies without corresponding user accounts
-        all_company_emails = [c.email for c in db.query(Company.email).all()]
-        all_user_emails = [u.email for u in db.query(User.email).filter(User.role == "company").all()]
         
         db.commit()
         
@@ -1022,17 +1067,16 @@ async def check_database_integrity(
             User.is_suspended == True
         ).count()
         
-        # Check for companies without user accounts
-        companies = db.query(Company).all()
+        # Check for employer profiles without user accounts
+        employer_profiles = db.query(EmployerProfile).all()
         companies_without_users = 0
-        for company in companies:
-            user = db.query(User).filter(User.email == company.email).first()
-            if not user:
+        for employer_profile in employer_profiles:
+            if not employer_profile.user:
                 companies_without_users += 1
                 issues.append({
                     "type": "missing_user_account",
-                    "company_id": company.id,
-                    "company_email": company.email
+                    "company_id": employer_profile.id,
+                    "company_name": employer_profile.company_name
                 })
         
         # Check for applications referencing deleted internships
@@ -1043,7 +1087,7 @@ async def check_database_integrity(
         
         report = {
             "total_users": db.query(User).count(),
-            "total_companies": db.query(Company).count(),
+            "total_companies": db.query(EmployerProfile).count(),
             "total_internships": db.query(Internship).count(),
             "total_applications": db.query(Application).count(),
             "unverified_users": unverified_users,
